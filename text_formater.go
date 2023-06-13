@@ -23,16 +23,18 @@ func levelIcon(l Level) string {
 	case LEVEL_INFO:
 		// return "і"
 		return "⬗"
+		// return "◎"
 	case LEVEL_LOG:
-		// return "⚬"
-		// return "ʘ"
-		return "᳃"
+		// return "⌾"
+		// return "๏"
+		return "○"
 	case LEVEL_SUCCESS:
 		return "✔"
 	case LEVEL_DEBUG:
 		// return "ⱗ"
 		// return "ӿ"
-		return "⎈"
+		// return "⚜"
+		return "❅"
 	}
 	return ""
 }
