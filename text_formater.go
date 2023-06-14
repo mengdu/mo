@@ -16,10 +16,13 @@ func color(s string, start string, end string) string {
 func levelIcon(l Level) string {
 	switch l {
 	case LEVEL_ERROR:
-		return "✗"
+		// return "✗"
+		// return "✕"
+		return "✘"
 	case LEVEL_WARN:
-		return "⚠"
-		// return "✧"
+		// return "⚠"
+		return "✧"
+		// return "✦"
 	case LEVEL_INFO:
 		// return "і"
 		return "⬗"
