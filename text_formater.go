@@ -6,10 +6,6 @@ import (
 	"strings"
 )
 
-func color(s string, start string, end string) string {
-	return fmt.Sprintf("\u001b[%sm%s\u001b[%sm", start, s, end)
-}
-
 func levelIcon(l Level) string {
 	switch l {
 	case LEVEL_ERROR:
@@ -139,6 +135,9 @@ func (f *TextForamter) Format(log *Record) ([]byte, error) {
 	}
 	if at != "" {
 		appendValue(buf, at)
+	}
+	if log.Tag != "" {
+		appendValue(buf, color(fmt.Sprintf("[%s]", log.Tag), fmt.Sprintf("38;5;%d", strHashCode(log.Tag)), "0"))
 	}
 	if f.EnableLevel {
 		appendValue(buf, level)

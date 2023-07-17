@@ -22,6 +22,7 @@ type Formater interface {
 type Record struct {
 	Logger   *Logger   `json:"-"`
 	At       time.Time `json:"at"`
+	Tag      string    `json:"tag"`
 	Level    Level     `json:"level"`
 	Message  string    `json:"msg"`
 	Meta     Meta      `json:"meta"`
@@ -41,6 +42,7 @@ type Logger struct {
 	ForceColor          bool
 	DisableColor        bool
 	DisableSprintfColor bool
+	Tag                 string
 	Level               Level
 	mu                  sync.Mutex
 	entryPool           sync.Pool

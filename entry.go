@@ -34,6 +34,7 @@ func (e *Entry) log(level Level, caller int, args ...any) {
 	log := &Record{
 		Logger:   e.logger,
 		At:       time.Now(),
+		Tag:      e.logger.Tag,
 		Level:    level,
 		Message:  msg,
 		Meta:     e.Meta,

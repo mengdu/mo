@@ -34,6 +34,7 @@ func main() {
 	// logger.DisableColor = true
 	logger.Level = mo.LEVEL_ALL
 	// logger.Level = mo.WARN
+	logger.Tag = "HTTP"
 	logger.Caller = true
 	logger.RelativeFilePath = true
 	logger.Meta = map[string]interface{}{
@@ -76,6 +77,7 @@ func main() {
 
 	fmt.Println("JSON formater logger")
 	jlog := mo.New()
+	jlog.Tag = "HTTP"
 	jlog.DisableSprintfColor = true
 	jlog.Formater = &mo.JsonForamter{}
 	jlog.Meta = mo.Meta{
