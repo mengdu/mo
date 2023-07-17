@@ -71,6 +71,7 @@ func BenchmarkNone(b *testing.B) {
 	logger := New()
 	logger.Level = LEVEL_NONE
 	logger.Caller = false
+	logger.DisableSprintfColor = true
 	logger.Formater = &JsonForamter{}
 	logger.Stdout = stream
 	logger.Stderr = stream
@@ -89,9 +90,9 @@ func BenchmarkDefault(b *testing.B) {
 	stream := &blackholeStream{}
 	logger := New()
 	logger.Caller = false
+	logger.ForceColor = true
 	logger.Formater = &TextForamter{
 		EnableTime: false,
-		ForceColor: true,
 	}
 	logger.Stdout = stream
 	logger.Stderr = stream
@@ -153,9 +154,9 @@ func BenchmarkFull(b *testing.B) {
 	logger.Meta = map[string]interface{}{
 		"a": 1,
 	}
+	logger.ForceColor = true
 	logger.Formater = &TextForamter{
 		EnableTime:  true,
-		ForceColor:  true,
 		EnableLevel: true,
 	}
 	logger.Stdout = stream

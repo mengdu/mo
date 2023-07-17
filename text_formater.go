@@ -3,10 +3,7 @@ package mo
 import (
 	"encoding/json"
 	"fmt"
-	"os"
 	"strings"
-
-	"github.com/mattn/go-isatty"
 )
 
 func color(s string, start string, end string) string {
@@ -61,22 +58,11 @@ func levelShort(l Level) string {
 }
 
 type TextForamter struct {
-	DisableColor     bool
-	ForceColor       bool
 	DisableLevelIcon bool
 	EnableTime       bool
 	EnableLevel      bool
 	ShortLevel       bool
 	TimeLayout       string
-}
-
-func (f *TextForamter) isColored() bool {
-	isColored := f.ForceColor || isatty.IsTerminal(os.Stdout.Fd()) || isatty.IsCygwinTerminal(os.Stdout.Fd())
-	switch force, ok := os.LookupEnv("FORCE_COLOR"); {
-	case ok && force != "0":
-		isColored = true
-	}
-	return isColored && !f.DisableColor
 }
 
 func (f *TextForamter) Format(log *Record) ([]byte, error) {
@@ -110,7 +96,7 @@ func (f *TextForamter) Format(log *Record) ([]byte, error) {
 		meta = string(buf)
 	}
 
-	if f.isColored() {
+	if log.Logger.EnableColor() {
 		if icon != "" {
 			switch log.Level {
 			case LEVEL_ERROR:
@@ -137,9 +123,6 @@ func (f *TextForamter) Format(log *Record) ([]byte, error) {
 		}
 		if file != "" {
 			file = color(file, "2", "22")
-		}
-		if log.Level == LEVEL_ERROR {
-			msg = color(msg, "1;31", "0")
 		}
 		if meta != "" {
 			meta = color(meta, "34", "0")

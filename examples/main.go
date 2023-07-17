@@ -1,57 +1,10 @@
 package main
 
 import (
-	"errors"
 	"fmt"
-	"time"
 
 	"github.com/mengdu/mo"
 )
-
-type user struct {
-	Name      string
-	Email     string
-	CreatedAt time.Time
-}
-
-var oneUser = &user{
-	Name:      "Jane Doe",
-	Email:     "jane@test.com",
-	CreatedAt: time.Date(1980, 1, 1, 12, 0, 0, 0, time.UTC),
-}
-var meta = mo.Meta{
-	"int":     1,
-	"ints":    []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 0},
-	"string":  "hello",
-	"strings": []string{"a", "b", "c", "d", "e", "f", "g", "h", "i", "j"},
-	"time":    time.Unix(0, 0),
-	"times": []time.Time{
-		time.Unix(0, 0),
-		time.Unix(1, 0),
-		time.Unix(2, 0),
-		time.Unix(3, 0),
-		time.Unix(4, 0),
-		time.Unix(5, 0),
-		time.Unix(6, 0),
-		time.Unix(7, 0),
-		time.Unix(8, 0),
-		time.Unix(9, 0),
-	},
-	"user1": oneUser,
-	"users": []*user{
-		oneUser,
-		oneUser,
-		oneUser,
-		oneUser,
-		oneUser,
-		oneUser,
-		oneUser,
-		oneUser,
-		oneUser,
-		oneUser,
-	},
-	"error": errors.New("fail"),
-}
 
 func main() {
 	fmt.Println("Std Logger")
@@ -78,6 +31,7 @@ func main() {
 	// errfile, _ := os.OpenFile("my-err.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
 	// logger.Stdout = file
 	// logger.Stderr = errfile
+	// logger.DisableColor = true
 	logger.Level = mo.LEVEL_ALL
 	// logger.Level = mo.WARN
 	logger.Caller = true
@@ -91,7 +45,6 @@ func main() {
 		EnableTime: true,
 		TimeLayout: "15:04:05.000",
 		// TimeLayout: "03:04:05.000PM",
-		// DisableColor: true,
 		EnableLevel: true,
 		ShortLevel:  true,
 	}
@@ -119,10 +72,11 @@ func main() {
 		"b": 1,
 	}).With(mo.Meta{
 		"c": 1,
-	}).Info("With meta message")
+	}).Infof("With meta message %s", "Hello")
 
 	fmt.Println("JSON formater logger")
 	jlog := mo.New()
+	jlog.DisableSprintfColor = true
 	jlog.Formater = &mo.JsonForamter{}
 	jlog.Meta = mo.Meta{
 		"a": 1,
@@ -141,4 +95,9 @@ func main() {
 	jlog.Logf("Format message %d", 1)
 	jlog.Successf("Format message %d", 1)
 	jlog.Debugf("Format message %d", 1)
+
+	fmt.Println(logger.Sprintf("var: %v\nvar+: %+v\nvar#: %#v\n", logger, logger, logger))
+	fmt.Println(logger.Sprintf("T: %T\nt: %t\np: %p\n", logger, true, logger))
+	fmt.Println(logger.Sprintf("b: %b\no: %o\nx: %x\nX: %X\nd: %d\n", 8273412, 8273412, 8273412, 8273412, 8273412))
+	fmt.Println(logger.Sprintf("s: %s\nU: %U\nq: %q", "Hello Mo!", '中', "Hi, \nMo!"))
 }

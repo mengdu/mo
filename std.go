@@ -14,6 +14,10 @@ var Std = &Logger{
 	mu:       sync.Mutex{},
 }
 
+func Sprintf(format string, args ...any) string {
+	return Std.Sprintf(format, args...)
+}
+
 func With(meta map[string]any) *Entry {
 	return Std.With(meta)
 }

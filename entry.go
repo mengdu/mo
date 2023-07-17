@@ -73,7 +73,7 @@ func (e *Entry) Error(s ...any) {
 }
 
 func (e *Entry) Errorf(fotmat string, s ...any) {
-	e.log(LEVEL_ERROR, 4, fmt.Sprintf(fotmat, s...))
+	e.log(LEVEL_ERROR, 4, e.logger.Sprintf(fotmat, s...))
 }
 
 func (e *Entry) Warn(s ...any) {
@@ -81,7 +81,7 @@ func (e *Entry) Warn(s ...any) {
 }
 
 func (e *Entry) Warnf(fotmat string, s ...any) {
-	e.log(LEVEL_WARN, 4, fmt.Sprintf(fotmat, s...))
+	e.log(LEVEL_WARN, 4, e.logger.Sprintf(fotmat, s...))
 }
 
 func (e *Entry) Info(s ...any) {
@@ -89,7 +89,7 @@ func (e *Entry) Info(s ...any) {
 }
 
 func (e *Entry) Infof(fotmat string, s ...any) {
-	e.log(LEVEL_INFO, 4, fmt.Sprintf(fotmat, s...))
+	e.log(LEVEL_INFO, 4, e.logger.Sprintf(fotmat, s...))
 }
 
 func (e *Entry) Log(s ...any) {
@@ -97,7 +97,7 @@ func (e *Entry) Log(s ...any) {
 }
 
 func (e *Entry) Logf(fotmat string, s ...any) {
-	e.log(LEVEL_LOG, 4, fmt.Sprintf(fotmat, s...))
+	e.log(LEVEL_LOG, 4, e.logger.Sprintf(fotmat, s...))
 }
 
 func (e *Entry) Success(s ...any) {
@@ -105,7 +105,7 @@ func (e *Entry) Success(s ...any) {
 }
 
 func (e *Entry) Successf(fotmat string, s ...any) {
-	e.log(LEVEL_SUCCESS, 4, fmt.Sprintf(fotmat, s...))
+	e.log(LEVEL_SUCCESS, 4, e.logger.Sprintf(fotmat, s...))
 }
 
 func (e *Entry) Debug(s ...any) {
@@ -113,5 +113,5 @@ func (e *Entry) Debug(s ...any) {
 }
 
 func (e *Entry) Debugf(fotmat string, s ...any) {
-	e.log(LEVEL_DEBUG, 4, fmt.Sprintf(fotmat, s...))
+	e.log(LEVEL_DEBUG, 4, e.logger.Sprintf(fotmat, s...))
 }

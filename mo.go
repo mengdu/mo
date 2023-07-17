@@ -6,6 +6,8 @@ import (
 	"os"
 	"sync"
 	"time"
+
+	"github.com/mattn/go-isatty"
 )
 
 type any = interface{}
@@ -35,10 +37,13 @@ type Logger struct {
 	// Caller tracing
 	Caller bool
 	// Caller tracing file is relative path
-	RelativeFilePath bool
-	Level            Level
-	mu               sync.Mutex
-	entryPool        sync.Pool
+	RelativeFilePath    bool
+	ForceColor          bool
+	DisableColor        bool
+	DisableSprintfColor bool
+	Level               Level
+	mu                  sync.Mutex
+	entryPool           sync.Pool
 }
 
 func New() *Logger {
@@ -49,6 +54,65 @@ func New() *Logger {
 		Level:    LEVEL_ALL,
 		mu:       sync.Mutex{},
 	}
+}
+
+func (l *Logger) EnableColor() bool {
+	enable := l.ForceColor || isatty.IsTerminal(os.Stdout.Fd()) || isatty.IsCygwinTerminal(os.Stdout.Fd())
+	switch force, ok := os.LookupEnv("FORCE_COLOR"); {
+	case ok && force != "0":
+		enable = true
+	}
+	return enable && !l.DisableColor
+}
+
+func (l *Logger) Sprintf(format string, args ...any) string {
+	if !l.EnableColor() || l.DisableSprintfColor {
+		return fmt.Sprintf(format, args...)
+	}
+	b := newBuffer()
+	defer releaseBuffer(b)
+	end := len(format)
+	for i := 0; i < end; {
+		si := i
+		for i < end && format[i] != '%' {
+			i++
+		}
+		if i > si {
+			b.WriteString(format[si:i])
+		}
+		if i >= end {
+			break
+		}
+		pi := i
+		i++ // skip %
+	placeholder:
+		for ; i < end; i++ {
+			c := format[i]
+			if c == '+' || c == '-' || c == '#' || c == ' ' || '0' <= c && c <= '9' {
+				continue
+			}
+			pt := format[pi : i+1]
+			switch c {
+			case 'v':
+				b.WriteString(color(pt, "93", "0"))
+			case 'T', 'p':
+				b.WriteString(color(pt, "34", "0"))
+			case 't':
+				b.WriteString(color(pt, "33", "0"))
+			case 'd', 'e', 'E', 'o', 'x', 'X', 'b', 'f', 'F', 'g', 'G':
+				b.WriteString(color(pt, "34", "0"))
+			case 's', 'c', 'U', 'q':
+				b.WriteString(color(pt, "32", "0"))
+			default:
+				b.WriteString(pt)
+				i++
+				break placeholder
+			}
+			i++
+			break
+		}
+	}
+	return fmt.Sprintf(b.String(), args...)
 }
 
 func (l *Logger) newEntry() *Entry {
@@ -107,7 +171,7 @@ func (l *Logger) Error(s ...any) {
 }
 
 func (l *Logger) Errorf(fotmat string, s ...any) {
-	l.log(LEVEL_ERROR, fmt.Sprintf(fotmat, s...))
+	l.log(LEVEL_ERROR, l.Sprintf(fotmat, s...))
 }
 
 func (l *Logger) Warn(s ...any) {
@@ -115,7 +179,7 @@ func (l *Logger) Warn(s ...any) {
 }
 
 func (l *Logger) Warnf(fotmat string, s ...any) {
-	l.log(LEVEL_WARN, fmt.Sprintf(fotmat, s...))
+	l.log(LEVEL_WARN, l.Sprintf(fotmat, s...))
 }
 
 func (l *Logger) Info(s ...any) {
@@ -123,7 +187,7 @@ func (l *Logger) Info(s ...any) {
 }
 
 func (l *Logger) Infof(fotmat string, s ...any) {
-	l.log(LEVEL_INFO, fmt.Sprintf(fotmat, s...))
+	l.log(LEVEL_INFO, l.Sprintf(fotmat, s...))
 }
 
 func (l *Logger) Log(s ...any) {
@@ -131,7 +195,7 @@ func (l *Logger) Log(s ...any) {
 }
 
 func (l *Logger) Logf(fotmat string, s ...any) {
-	l.log(LEVEL_LOG, fmt.Sprintf(fotmat, s...))
+	l.log(LEVEL_LOG, l.Sprintf(fotmat, s...))
 }
 
 func (l *Logger) Success(s ...any) {
@@ -139,7 +203,7 @@ func (l *Logger) Success(s ...any) {
 }
 
 func (l *Logger) Successf(fotmat string, s ...any) {
-	l.log(LEVEL_SUCCESS, fmt.Sprintf(fotmat, s...))
+	l.log(LEVEL_SUCCESS, l.Sprintf(fotmat, s...))
 }
 
 func (l *Logger) Debug(s ...any) {
@@ -147,5 +211,5 @@ func (l *Logger) Debug(s ...any) {
 }
 
 func (l *Logger) Debugf(fotmat string, s ...any) {
-	l.log(LEVEL_DEBUG, fmt.Sprintf(fotmat, s...))
+	l.log(LEVEL_DEBUG, l.Sprintf(fotmat, s...))
 }
