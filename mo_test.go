@@ -154,6 +154,7 @@ func BenchmarkFull(b *testing.B) {
 	logger.Meta = map[string]interface{}{
 		"a": 1,
 	}
+	logger.Tag = "HTTP"
 	logger.ForceColor = true
 	logger.Formater = &TextForamter{
 		EnableTime:  true,
