@@ -8,12 +8,14 @@ import (
 
 func main() {
 	fmt.Println("Std Logger")
+	mo.Std.Tag = "A"
 	mo.Error("Std Error message")
 	mo.Warn("Std Warn message")
 	mo.Info("Std Info message")
 	mo.Log("Std Log message")
 	mo.Success("Std Success message")
 	mo.Debug("Std Debug message")
+	mo.Std.Tag = "B"
 	mo.Errorf("Format message %d", 1)
 	mo.Warnf("Format message %d", 1)
 	mo.Infof("Format message %d", 1)

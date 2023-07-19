@@ -12,9 +12,8 @@ func color(s string, start string, end string) string {
 func strHashCode(str string) uint32 {
 	h := fnv.New32a()
 	h.Write([]byte(str))
-	// 1 ~ 220 color
 	min := 1
-	max := 220
+	max := 231
 	size := max - min + 1
 	hashValue := h.Sum32()
 	return hashValue%uint32(size) + uint32(min)
