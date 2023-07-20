@@ -2,6 +2,14 @@
 
 A leveled logger library for golang.
 
+**Features**
+
+- Support level log
+- Support file line number
+- Support for distinguishing log modules
+- Support log colors
+- Support for custom formatting
+
 ```sh
 go get github.com/mengdu/mo
 ```
@@ -24,6 +32,8 @@ func main() {
 	}).Info("With meta message")
 }
 ```
+
+[Example](examples/main.go)
 
 ![Preview](preview.png)
 
