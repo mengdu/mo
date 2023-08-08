@@ -98,54 +98,54 @@ func (f *TextForamter) Format(log *Record) ([]byte, error) {
 		if icon != "" {
 			switch log.Level {
 			case LEVEL_ERROR:
-				icon = color(icon, "31", "0")
+				icon = color(icon, "31", "39")
 			case LEVEL_WARN:
-				icon = color(icon, "93", "0")
+				icon = color(icon, "93", "39")
 			case LEVEL_INFO:
-				icon = color(icon, "36", "0")
+				icon = color(icon, "36", "39")
 			case LEVEL_LOG:
-				icon = color(icon, "34", "0")
+				icon = color(icon, "34", "39")
 			case LEVEL_SUCCESS:
-				icon = color(icon, "32", "0")
+				icon = color(icon, "32", "39")
 			case LEVEL_DEBUG:
-				icon = color(icon, "33", "0")
+				icon = color(icon, "33", "39")
 			}
 		}
 
 		if f.EnableLevel {
 			switch log.Level {
 			case LEVEL_ERROR:
-				level = color(level, "31", "0")
-				msg = color(msg, "31", "0")
+				level = color(level, "31", "39")
+				msg = color(msg, "31", "39")
 			case LEVEL_WARN:
-				level = color(level, "93", "0")
-				msg = color(msg, "93", "0")
+				level = color(level, "93", "39")
+				msg = color(msg, "93", "39")
 			case LEVEL_INFO:
-				level = color(level, "36", "0")
+				level = color(level, "36", "39")
 			case LEVEL_LOG:
-				level = color(level, "34", "0")
+				level = color(level, "34", "39")
 			case LEVEL_SUCCESS:
-				level = color(level, "32", "0")
+				level = color(level, "32", "39")
 			case LEVEL_DEBUG:
-				level = color(level, "33", "0")
+				level = color(level, "33", "39")
 			}
 		}
 
 		switch log.Level {
 		case LEVEL_ERROR:
-			msg = color(msg, "31", "0")
+			msg = color(msg, "31", "39")
 		case LEVEL_WARN:
-			msg = color(msg, "93", "0")
+			msg = color(msg, "93", "39")
 		}
 
 		if file != "" {
-			file = color(file, "2", "22")
+			file = color(file, "2", "22;0;39")
 		}
 		if meta != "" {
-			meta = color(meta, "34", "0")
+			meta = color(meta, "34", "39")
 		}
 		if at != "" {
-			at = color(at, "2;37", "0")
+			at = color(at, "2;37", "0;39")
 		}
 	}
 
@@ -160,7 +160,7 @@ func (f *TextForamter) Format(log *Record) ([]byte, error) {
 	if log.Tag != "" {
 		if log.Tag != f.cacheRawTag {
 			f.cacheRawTag = log.Tag
-			f.cacheTag = color(fmt.Sprintf("[%s]", log.Tag), fmt.Sprintf("38;5;%d", strHashCode(log.Tag)), "0")
+			f.cacheTag = color(fmt.Sprintf("[%s]", log.Tag), fmt.Sprintf("38;5;%d", strHashCode(log.Tag)), "39")
 		}
 		if at == "" {
 			appendValue(buf, f.cacheTag)

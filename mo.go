@@ -96,15 +96,15 @@ func (l *Logger) Sprintf(format string, args ...any) string {
 			pt := format[pi : i+1]
 			switch c {
 			case 'v':
-				b.WriteString(color(pt, "93", "0"))
+				b.WriteString(color(pt, "93", "39"))
 			case 'T', 'p':
-				b.WriteString(color(pt, "34", "0"))
+				b.WriteString(color(pt, "34", "39"))
 			case 't':
-				b.WriteString(color(pt, "33", "0"))
+				b.WriteString(color(pt, "33", "39"))
 			case 'd', 'e', 'E', 'o', 'x', 'X', 'b', 'f', 'F', 'g', 'G':
-				b.WriteString(color(pt, "34", "0"))
+				b.WriteString(color(pt, "34", "39"))
 			case 's', 'c', 'U', 'q':
-				b.WriteString(color(pt, "32", "0"))
+				b.WriteString(color(pt, "32", "39"))
 			default:
 				b.WriteString(pt)
 				i++

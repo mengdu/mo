@@ -16,12 +16,13 @@ func main() {
 	mo.Success("Std Success message")
 	mo.Debug("Std Debug message")
 	mo.Std.Tag = "B"
-	mo.Errorf("Format message %d", 1)
-	mo.Warnf("Format message %d", 1)
-	mo.Infof("Format message %d", 1)
-	mo.Logf("Format message %d", 1)
-	mo.Successf("Format message %d", 1)
-	mo.Debugf("Format message %d", 1)
+	mo.Errorf("Format message %ds", 1)
+	mo.Warnf("Format message %ds", 1)
+	mo.Infof("Format message %ds", 1)
+	mo.Logf("Format message %ds", 1)
+	mo.Successf("Format message %ds", 1)
+	mo.Debugf("Format message %ds", 1)
+	mo.Warnf("Bool %t, Int %d, Float %f, String %s", true, 666, 3.24, "Hello")
 
 	mo.With(map[string]interface{}{
 		"a": 1,
