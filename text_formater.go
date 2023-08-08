@@ -99,26 +99,45 @@ func (f *TextForamter) Format(log *Record) ([]byte, error) {
 			switch log.Level {
 			case LEVEL_ERROR:
 				icon = color(icon, "31", "0")
+			case LEVEL_WARN:
+				icon = color(icon, "93", "0")
+			case LEVEL_INFO:
+				icon = color(icon, "36", "0")
+			case LEVEL_LOG:
+				icon = color(icon, "34", "0")
+			case LEVEL_SUCCESS:
+				icon = color(icon, "32", "0")
+			case LEVEL_DEBUG:
+				icon = color(icon, "33", "0")
+			}
+		}
+
+		if f.EnableLevel {
+			switch log.Level {
+			case LEVEL_ERROR:
 				level = color(level, "31", "0")
 				msg = color(msg, "31", "0")
 			case LEVEL_WARN:
-				icon = color(icon, "93", "0")
 				level = color(level, "93", "0")
 				msg = color(msg, "93", "0")
 			case LEVEL_INFO:
-				icon = color(icon, "36", "0")
 				level = color(level, "36", "0")
 			case LEVEL_LOG:
-				icon = color(icon, "34", "0")
 				level = color(level, "34", "0")
 			case LEVEL_SUCCESS:
-				icon = color(icon, "32", "0")
 				level = color(level, "32", "0")
 			case LEVEL_DEBUG:
-				icon = color(icon, "33", "0")
 				level = color(level, "33", "0")
 			}
 		}
+
+		switch log.Level {
+		case LEVEL_ERROR:
+			msg = color(msg, "31", "0")
+		case LEVEL_WARN:
+			msg = color(msg, "93", "0")
+		}
+
 		if file != "" {
 			file = color(file, "2", "22")
 		}
