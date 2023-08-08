@@ -23,6 +23,8 @@ func main() {
 	mo.Successf("Format message %ds", 1)
 	mo.Debugf("Format message %ds", 1)
 	mo.Warnf("Bool %t, Int %d, Float %f, String %s", true, 666, 3.24, "Hello")
+	// mo.Panic("Something Wrong!")
+	// mo.Panicf("%d Wrongs!", 1)
 
 	mo.With(map[string]interface{}{
 		"a": 1,
@@ -54,12 +56,14 @@ func main() {
 	}
 
 	logger.Error("Error message")
+	// logger.Panic("Panic message")
 	logger.Warn("Warn message", 1, 2, 3)
 	logger.Info("Info message")
 	logger.Log("Log message")
 	logger.Success("Success message")
 	logger.Debug("Debug message")
 	logger.Errorf("Format message %d", 1)
+	// logger.Panicf("Format message %d", 1)
 	logger.Warnf("Format message %d", 1)
 	logger.Infof("Format message %d", 1)
 	logger.Logf("Format message %d", 1)

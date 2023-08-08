@@ -176,6 +176,16 @@ func (l *Logger) Errorf(fotmat string, s ...any) {
 	l.log(LEVEL_ERROR, l.Sprintf(fotmat, s...))
 }
 
+func (l *Logger) Panic(s ...any) {
+	defer os.Exit(1)
+	l.log(LEVEL_ERROR, s...)
+}
+
+func (l *Logger) Panicf(fotmat string, s ...any) {
+	defer os.Exit(1)
+	l.log(LEVEL_ERROR, l.Sprintf(fotmat, s...))
+}
+
 func (l *Logger) Warn(s ...any) {
 	l.log(LEVEL_WARN, s...)
 }

@@ -2,6 +2,7 @@ package mo
 
 import (
 	"fmt"
+	"os"
 	"path/filepath"
 	"time"
 )
@@ -74,6 +75,16 @@ func (e *Entry) Error(s ...any) {
 }
 
 func (e *Entry) Errorf(fotmat string, s ...any) {
+	e.log(LEVEL_ERROR, 4, e.logger.Sprintf(fotmat, s...))
+}
+
+func (e *Entry) Panic(s ...any) {
+	defer os.Exit(1)
+	e.log(LEVEL_ERROR, 4, s...)
+}
+
+func (e *Entry) Panicf(fotmat string, s ...any) {
+	defer os.Exit(1)
 	e.log(LEVEL_ERROR, 4, e.logger.Sprintf(fotmat, s...))
 }
 

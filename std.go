@@ -30,6 +30,14 @@ func Errorf(format string, s ...any) {
 	Std.Errorf(format, s...)
 }
 
+func Panic(s ...any) {
+	Std.Panic(s...)
+}
+
+func Panicf(format string, s ...any) {
+	Std.Panicf(format, s...)
+}
+
 func Warn(s ...any) {
 	Std.Warn(s...)
 }
