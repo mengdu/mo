@@ -129,6 +129,7 @@ func (l *Logger) newEntry() *Entry {
 	return &Entry{
 		logger: l,
 		Meta:   meta,
+		Tag:    l.Tag,
 	}
 }
 
@@ -165,6 +166,15 @@ func (l *Logger) With(meta map[string]any) *Entry {
 	return &Entry{
 		logger: l,
 		Meta:   data,
+		Tag:    l.Tag,
+	}
+}
+
+func (l *Logger) WithTag(tag string) *Entry {
+	return &Entry{
+		logger: l,
+		Meta:   l.Meta,
+		Tag:    tag,
 	}
 }
 

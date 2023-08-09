@@ -10,6 +10,7 @@ import (
 type Entry struct {
 	logger *Logger
 	Meta   Meta
+	Tag    string
 }
 
 func (e *Entry) log(level Level, caller int, args ...any) {
@@ -35,7 +36,7 @@ func (e *Entry) log(level Level, caller int, args ...any) {
 	log := &Record{
 		Logger:   e.logger,
 		At:       time.Now(),
-		Tag:      e.logger.Tag,
+		Tag:      e.Tag,
 		Level:    level,
 		Message:  msg,
 		Meta:     e.Meta,
@@ -67,6 +68,7 @@ func (e *Entry) With(meta map[string]any) *Entry {
 	return &Entry{
 		logger: e.logger,
 		Meta:   data,
+		Tag:    e.Tag,
 	}
 }
 

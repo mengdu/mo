@@ -25,10 +25,13 @@ func main() {
 	mo.Warnf("Bool %t, Int %d, Float %f, String %s", true, 666, 3.24, "Hello")
 	// mo.Panic("Something Wrong!")
 	// mo.Panicf("%d Wrongs!", 1)
-
 	mo.With(map[string]interface{}{
 		"a": 1,
 	}).Info("Std With meta message")
+	mo.WithTag("C").Infof("Format message %ds", 1)
+	mo.WithTag("D").Infof("Format message %ds", 1)
+	mo.WithTag("E").Infof("Format message %ds", 1)
+
 	// <-time.Tick(time.Second)
 	fmt.Println("Text formater logger")
 	logger := mo.New()
@@ -81,6 +84,8 @@ func main() {
 	}).With(mo.Meta{
 		"c": 1,
 	}).Infof("With meta message %s", "Hello")
+	logger.WithTag("FOO").Info("With new tag message")
+	logger.WithTag("BAR").Info("With new tag message")
 
 	fmt.Println("JSON formater logger")
 	jlog := mo.New()
@@ -104,6 +109,7 @@ func main() {
 	jlog.Logf("Format message %d", 1)
 	jlog.Successf("Format message %d", 1)
 	jlog.Debugf("Format message %d", 1)
+	jlog.WithTag("JOBS").Infof("Format message %d", 1)
 
 	fmt.Println(logger.Sprintf("var: %v\nvar+: %+v\nvar#: %#v\n", logger, logger, logger))
 	fmt.Println(logger.Sprintf("T: %T\nt: %t\np: %p\n", logger, true, logger))

@@ -22,6 +22,10 @@ func With(meta map[string]any) *Entry {
 	return Std.With(meta)
 }
 
+func WithTag(tag string) *Entry {
+	return Std.WithTag(tag)
+}
+
 func Error(s ...any) {
 	Std.Error(s...)
 }

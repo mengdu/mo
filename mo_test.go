@@ -127,6 +127,26 @@ func BenchmarkWith(b *testing.B) {
 	}
 }
 
+func BenchmarkWithTag(b *testing.B) {
+	stream := &blackholeStream{}
+	logger := New()
+	logger.Caller = false
+	logger.Formater = &TextForamter{
+		EnableTime: false,
+	}
+	logger.Stdout = stream
+	logger.Stderr = stream
+	b.ResetTimer()
+	b.RunParallel(func(pb *testing.PB) {
+		for pb.Next() {
+			logger.WithTag(time.Now().Format("15:04:05Z07:00")).Info("The quick brown fox jumps over the lazy dog")
+		}
+	})
+	if stream.WriteCount() != uint64(b.N) {
+		b.Fatalf("Log write count")
+	}
+}
+
 func BenchmarkCaller(b *testing.B) {
 	stream := &blackholeStream{}
 	logger := New()
