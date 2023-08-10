@@ -42,17 +42,20 @@ func (e *Entry) log(level Level, caller int, args ...any) {
 		Meta:     e.Meta,
 		Filename: filename,
 	}
-	buf, err := e.logger.Formater.Format(log)
-	if err != nil {
-		fmt.Printf("Logger format error: %v\n", err)
-	}
-
 	e.logger.mu.Lock()
 	defer e.logger.mu.Unlock()
+	buf, err := e.logger.Formater.Format(log)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Format error: %v\n", err)
+	}
 	if log.Level == LEVEL_ERROR || log.Level == LEVEL_WARN {
-		e.logger.Stderr.Write(buf)
+		if _, err := e.logger.Stderr.Write(buf); err != nil {
+			fmt.Fprintf(os.Stderr, "Failed to write to log, %v\n", err)
+		}
 	} else {
-		e.logger.Stdout.Write(buf)
+		if _, err := e.logger.Stdout.Write(buf); err != nil {
+			fmt.Fprintf(os.Stderr, "Failed to write to log, %v\n", err)
+		}
 	}
 }
 
