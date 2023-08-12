@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
+
+	"github.com/mengdu/mo/buffer"
 )
 
 func levelIcon(l Level) string {
@@ -149,13 +151,13 @@ func (f *TextForamter) Format(log *Record) ([]byte, error) {
 		}
 	}
 
-	buf := newBuffer()
-	defer releaseBuffer(buf)
+	buf := buffer.Get()
+	defer buffer.Put(buf)
 	if icon != "" {
-		appendValue(buf, icon)
+		buffer.Append(buf, icon)
 	}
 	if at != "" {
-		appendValue(buf, at)
+		buffer.Append(buf, at)
 	}
 	if log.Tag != "" {
 		if log.Tag != f.cacheRawTag {
@@ -163,7 +165,7 @@ func (f *TextForamter) Format(log *Record) ([]byte, error) {
 			f.cacheTag = color(fmt.Sprintf("[%s]", log.Tag), fmt.Sprintf("38;5;%d", strHashCode(log.Tag)), "39")
 		}
 		if at == "" {
-			appendValue(buf, f.cacheTag)
+			buffer.Append(buf, f.cacheTag)
 		} else {
 			buf.Write([]byte(f.cacheTag))
 		}
@@ -172,15 +174,15 @@ func (f *TextForamter) Format(log *Record) ([]byte, error) {
 		if log.Tag != "" {
 			buf.Write([]byte(level))
 		} else {
-			appendValue(buf, level)
+			buffer.Append(buf, level)
 		}
 	}
-	appendValue(buf, msg)
+	buffer.Append(buf, msg)
 	if meta != "" {
-		appendValue(buf, meta)
+		buffer.Append(buf, meta)
 	}
 	if file != "" {
-		appendValue(buf, file)
+		buffer.Append(buf, file)
 	}
 	buf.WriteByte('\n')
 	return buf.Bytes(), nil

@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/mattn/go-isatty"
+	"github.com/mengdu/mo/buffer"
 )
 
 type any = interface{}
@@ -54,7 +55,6 @@ func New() *Logger {
 		Stderr:   os.Stderr,
 		Formater: &TextForamter{},
 		Level:    LEVEL_ALL,
-		mu:       sync.Mutex{},
 	}
 }
 
@@ -71,8 +71,8 @@ func (l *Logger) Sprintf(format string, args ...any) string {
 	if !l.EnableColor() || l.DisableSprintfColor {
 		return fmt.Sprintf(format, args...)
 	}
-	b := newBuffer()
-	defer releaseBuffer(b)
+	b := buffer.Get()
+	defer buffer.Put(b)
 	end := len(format)
 	for i := 0; i < end; {
 		si := i
