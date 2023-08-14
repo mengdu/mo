@@ -2,7 +2,6 @@ package mo
 
 import (
 	"os"
-	"sync"
 )
 
 var Std = &Logger{
@@ -11,7 +10,7 @@ var Std = &Logger{
 	Level:    LEVEL_ALL,
 	Formater: &TextForamter{},
 	Caller:   false,
-	mu:       sync.Mutex{},
+	// mu:       sync.Mutex{},
 }
 
 func Sprintf(format string, args ...any) string {

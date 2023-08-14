@@ -5,6 +5,8 @@ import (
 	"os"
 	"path/filepath"
 	"time"
+
+	"github.com/mengdu/mo/buffer"
 )
 
 type Entry struct {
@@ -35,6 +37,7 @@ func (e *Entry) log(level Level, caller int, args ...any) {
 	msg = msg[0 : len(msg)-1] // remove last \n
 	log := &Record{
 		Logger:   e.logger,
+		Buf:      buffer.Get(),
 		At:       time.Now(),
 		Tag:      e.Tag,
 		Level:    level,
@@ -42,8 +45,7 @@ func (e *Entry) log(level Level, caller int, args ...any) {
 		Meta:     e.Meta,
 		Filename: filename,
 	}
-	e.logger.mu.Lock()
-	defer e.logger.mu.Unlock()
+	defer buffer.Put(log.Buf)
 	buf, err := e.logger.Formater.Format(log)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Format error: %v\n", err)

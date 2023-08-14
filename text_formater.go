@@ -61,8 +61,6 @@ type TextForamter struct {
 	EnableLevel      bool
 	ShortLevel       bool
 	TimeLayout       string
-	cacheRawTag      string
-	cacheTag         string
 }
 
 func (f *TextForamter) Format(log *Record) ([]byte, error) {
@@ -151,8 +149,7 @@ func (f *TextForamter) Format(log *Record) ([]byte, error) {
 		}
 	}
 
-	buf := buffer.Get()
-	defer buffer.Put(buf)
+	buf := log.Buf
 	if icon != "" {
 		buffer.Append(buf, icon)
 	}
@@ -160,14 +157,11 @@ func (f *TextForamter) Format(log *Record) ([]byte, error) {
 		buffer.Append(buf, at)
 	}
 	if log.Tag != "" {
-		if log.Tag != f.cacheRawTag {
-			f.cacheRawTag = log.Tag
-			f.cacheTag = color(fmt.Sprintf("[%s]", log.Tag), fmt.Sprintf("38;5;%d", strHashCode(log.Tag)), "39")
-		}
+		tag := color(fmt.Sprintf("[%s]", log.Tag), fmt.Sprintf("38;5;%d", strHashCode(log.Tag)), "39")
 		if at == "" {
-			buffer.Append(buf, f.cacheTag)
+			buffer.Append(buf, tag)
 		} else {
-			buf.Write([]byte(f.cacheTag))
+			buf.Write([]byte(tag))
 		}
 	}
 	if f.EnableLevel {

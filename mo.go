@@ -1,6 +1,7 @@
 package mo
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"os"
@@ -21,13 +22,14 @@ type Formater interface {
 }
 
 type Record struct {
-	Logger   *Logger   `json:"-"`
-	At       time.Time `json:"at"`
-	Tag      string    `json:"tag"`
-	Level    Level     `json:"level"`
-	Message  string    `json:"msg"`
-	Meta     Meta      `json:"meta"`
-	Filename string    `json:"file"`
+	Logger   *Logger       `json:"-"`
+	Buf      *bytes.Buffer `json:"-"`
+	At       time.Time     `json:"at"`
+	Tag      string        `json:"tag"`
+	Level    Level         `json:"level"`
+	Message  string        `json:"msg"`
+	Meta     Meta          `json:"meta"`
+	Filename string        `json:"file"`
 }
 
 type Logger struct {
@@ -45,8 +47,8 @@ type Logger struct {
 	DisableSprintfColor bool
 	Tag                 string
 	Level               Level
-	mu                  sync.Mutex
-	entryPool           sync.Pool
+	// mu                  sync.Mutex
+	entryPool sync.Pool
 }
 
 func New() *Logger {

@@ -2,12 +2,12 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"strings"
 	"sync"
 	"sync/atomic"
 
 	"github.com/mengdu/mo"
-	"github.com/mengdu/mo/buffer"
 )
 
 type Liner struct {
@@ -25,33 +25,12 @@ func (l *Liner) Write(p []byte) (n int, err error) {
 }
 
 type MyForamter struct {
-	mu sync.Mutex
+	// mu sync.Mutex
 }
 
 func (f *MyForamter) Format(log *mo.Record) ([]byte, error) {
-	// // fail
-	// f.mu.Lock()
-	// defer f.mu.Unlock()
-	buf := buffer.Get()
-	defer buffer.Put(buf)
-	err := json.NewEncoder(buf).Encode(log)
-	return buf.Bytes(), err
-
-	// // ok
-	// buf := buffer.Get()
-	// defer buffer.Put(buf)
-	// buf.WriteString(log.Message + "\n")
-	// return buf.Bytes(), nil
-
-	// // ok
-	// buf := &bytes.Buffer{}
-	// err := json.NewEncoder(buf).Encode(log)
-	// return buf.Bytes(), err
-
-	// // ok
-	// buf, err := json.Marshal(log)
-	// buf = append(buf, '\n')
-	// return buf, err
+	err := json.NewEncoder(log.Buf).Encode(log)
+	return log.Buf.Bytes(), err
 }
 
 func ThreedTest() {
@@ -67,23 +46,17 @@ func ThreedTest() {
 	w := sync.WaitGroup{}
 	i := int32(0)
 	n := int32(2)
-	// demo := Demo{
-	// 	writer:   liner,
-	// 	formater: &DemoFormater{},
-	// }
-	for ; i < 1000; i++ {
+	for ; i < 10000; i++ {
 		w.Add(int(n))
 		go func() {
-			// demo.Log("line message 1")
-			log.Warn("line message 1")
-			// log.WithTag("A").Warn("line message 1")
+			// log.Warn("line message 1")
+			log.WithTag("A").Warnf("line message %d", 1)
 			// liner.Write([]byte("line message 1\n"))
 			w.Done()
 		}()
 		go func() {
-			// demo.Log("line message 2")
-			log.Info("line message 2")
-			// log.WithTag("B").Info("line message 2")
+			// log.Info("line message 2")
+			log.WithTag("B").Infof("line message %d", 2)
 			// liner.Write([]byte("line message 2\n"))
 			w.Done()
 		}()
@@ -94,10 +67,10 @@ func ThreedTest() {
 	length := int32(len(lines))
 	// fmt.Print(string(liner.raw))
 	if liner.lineCnt != cnt {
-		mo.Errorf("Invoke Expect %d, Got %d", cnt, liner.lineCnt)
+		mo.Panicf("Invoke Expect %d, Got %d", cnt, liner.lineCnt)
 	} else if length != liner.lineCnt {
-		// fmt.Print(string(liner.raw))
-		mo.Errorf("Log Line Expect %d, Got %d", liner.lineCnt, length)
+		fmt.Print(string(liner.raw))
+		mo.Panicf("Log Line Expect %d, Got %d", liner.lineCnt, length)
 	} else {
 		// mo.Successf("Test ok!")
 	}
