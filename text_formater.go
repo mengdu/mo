@@ -69,6 +69,7 @@ func (f *TextForamter) Format(log *Record) ([]byte, error) {
 	file := log.Filename
 	meta := ""
 	at := ""
+	tag := log.Tag
 	level := fmt.Sprintf("[%s]", strings.ToUpper(log.Level.String()))
 
 	if !f.DisableLevelIcon {
@@ -95,6 +96,10 @@ func (f *TextForamter) Format(log *Record) ([]byte, error) {
 	}
 
 	if log.Logger.EnableColor() {
+		if tag != "" {
+			tag = color(fmt.Sprintf("[%s]", log.Tag), fmt.Sprintf("38;5;%d", strHashCode(log.Tag)), "39")
+		}
+
 		if icon != "" {
 			switch log.Level {
 			case LEVEL_ERROR:
@@ -147,6 +152,10 @@ func (f *TextForamter) Format(log *Record) ([]byte, error) {
 		if at != "" {
 			at = color(at, "2;37", "0;39")
 		}
+	} else {
+		if tag != "" {
+			tag = fmt.Sprintf("[%s]", tag)
+		}
 	}
 
 	buf := log.Buf
@@ -156,8 +165,7 @@ func (f *TextForamter) Format(log *Record) ([]byte, error) {
 	if at != "" {
 		buffer.Append(buf, at)
 	}
-	if log.Tag != "" {
-		tag := color(fmt.Sprintf("[%s]", log.Tag), fmt.Sprintf("38;5;%d", strHashCode(log.Tag)), "39")
+	if tag != "" {
 		if at == "" {
 			buffer.Append(buf, tag)
 		} else {
