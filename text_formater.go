@@ -159,25 +159,29 @@ func (f *TextForamter) Format(log *Record) ([]byte, error) {
 	}
 
 	buf := log.Buf
+	spaceRequired := false
 	if icon != "" {
 		buffer.Append(buf, icon)
 	}
 	if at != "" {
 		buffer.Append(buf, at)
+		spaceRequired = true
 	}
 	if tag != "" {
-		if at == "" {
+		if !spaceRequired {
 			buffer.Append(buf, tag)
 		} else {
 			buf.Write([]byte(tag))
 		}
+		spaceRequired = true
 	}
 	if f.EnableLevel {
-		if log.Tag != "" {
-			buf.Write([]byte(level))
-		} else {
+		if !spaceRequired {
 			buffer.Append(buf, level)
+		} else {
+			buf.Write([]byte(level))
 		}
+		spaceRequired = true
 	}
 	buffer.Append(buf, msg)
 	if meta != "" {
