@@ -53,10 +53,11 @@ goos: darwin
 goarch: amd64
 pkg: github.com/mengdu/mo
 cpu: Intel(R) Core(TM) i7-8700B CPU @ 3.20GHz
-BenchmarkDefault-4              46365386               130.8 ns/op            64 B/op          2 allocs/op
-BenchmarkDefaultWithCaller-4     9080079               666.1 ns/op           472 B/op         17 allocs/op
-BenchmarkJson-4                 18593970               325.9 ns/op           124 B/op          6 allocs/op
-BenchmarkJsonWithCaller-4        5194332              1150 ns/op             512 B/op         16 allocs/op
+BenchmarkDefault-4                      39429948               138.1 ns/op            64 B/op          2 allocs/op
+BenchmarkDefaultWithCaller-4             8169790               660.9 ns/op           496 B/op         18 allocs/op
+BenchmarkJson-4                         17008795               339.4 ns/op           124 B/op          6 allocs/op
+BenchmarkJsonWithCaller-4                5119900              1157 ns/op             512 B/op         16 allocs/op
+BenchmarkJsonWithCallerFull-4            3169348              1869 ns/op             720 B/op         24 allocs/op
 PASS
-ok      github.com/mengdu/mo    26.723s
+ok      github.com/mengdu/mo    38.280s
 ```

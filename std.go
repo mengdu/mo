@@ -24,16 +24,21 @@ type stdRecorder struct {
 func (r *stdRecorder) Log(ctx context.Context, level Level, msg string, kv []KeyValue) {
 	buf := r.pool.Get().(*bytes.Buffer)
 	defer r.pool.Put(buf)
+	ts := ""
 	caller := ""
 	for _, v := range kv {
 		if v.Key() == "ts" {
-			buf.WriteString("[")
-			fmt.Fprintf(buf, "%v", v.Value())
-			buf.WriteString("]")
+			ts = fmt.Sprint(v.Value())
 		}
 		if v.Key() == "caller" {
 			caller = v.Value().(string)
 		}
+	}
+
+	if ts == "" {
+		buf.WriteString("[")
+		buf.WriteString(ts)
+		buf.WriteString("]")
 	}
 
 	buf.WriteString("[")
@@ -178,9 +183,4 @@ func Errorw(msg string, kv ...KeyValue) {
 // Fatalw logs a message with key-value pairs at the fatal level using the default logger and exits the program.
 func Fatalw(msg string, kv ...KeyValue) {
 	std.Fatalw(msg, kv...)
-}
-
-// With creates a new Logger instance with the same configuration as the default logger but using the specified context.
-func With(ctx context.Context, kv ...KeyValue) *Logger {
-	return std.With(ctx)
 }

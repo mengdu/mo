@@ -44,16 +44,20 @@ func (c *ConsoleLogger) Log(ctx context.Context, level mo.Level, msg string, kv 
 	buf := c.pool.Get().(*bytes.Buffer)
 	defer c.pool.Put(buf)
 	caller := ""
+	ts := ""
 	for _, v := range kv {
 		if v.Key() == "ts" {
-			buf.WriteString("[")
-			// fmt.Fprintf(buf, "%v", v.Value())
-			buf.WriteString(color.Dim().String(fmt.Sprintf("%v", v.Value())))
-			buf.WriteString("]")
+			ts = color.Dim().String(fmt.Sprintf("%v", v.Value()))
 		}
 		if v.Key() == "caller" {
 			caller = v.Value().(string)
 		}
+	}
+
+	if ts != "" {
+		buf.WriteString("[")
+		buf.WriteString(ts)
+		buf.WriteString("]")
 	}
 
 	levelStr := level.Abbr()
@@ -196,5 +200,6 @@ func main() {
 	l.Errorw("errorw message", mo.Value("k1", 123), mo.Value("k2", true), mo.Value("k3", []int{1, 2, 3}))
 	// l.Fatalw("fatalw message", mo.Value("k1", 123), mo.Value("k2", true), mo.Value("k3", []int{1, 2, 3}))
 
+	l.Infow("replace ts, caller", mo.Value("ts", "xxx"), mo.Value("caller", "path-to-xxx.go:123"))
 	l.With(context.Background()).Infow("test with context", mo.Value("k1", 123))
 }

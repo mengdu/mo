@@ -1,17 +1,15 @@
 package main
 
 import (
-	"context"
-
 	"github.com/mengdu/mo"
 )
 
 func main() {
-	// mo.SetBase(
-	// 	mo.Value("ts", mo.Timestamp("15:04:05.000")),
-	// 	mo.Value("caller", mo.Caller(4)),
-	// 	mo.Value("tag", "dev"),
-	// )
+	mo.SetBase(
+		mo.Value("ts", mo.Timestamp("15:04:05.000")),
+		mo.Value("caller", mo.Caller(4)),
+		mo.Value("tag", "dev"),
+	)
 
 	mo.Debug("debug message")
 	mo.Info("info message")
@@ -31,5 +29,5 @@ func main() {
 	mo.Errorw("errorw message", mo.Value("k1", 123), mo.Value("k2", true), mo.Value("k3", []int{1, 2, 3}))
 	// mo.Fatalw("fatalw message", mo.Value("k1", 123), mo.Value("k2", true), mo.Value("k3", []int{1, 2, 3}))
 
-	mo.With(context.Background()).Info("test with context")
+	mo.Infow("replace ts, caller", mo.Value("ts", "xxx"), mo.Value("caller", "path-to-xxx.go:123"))
 }

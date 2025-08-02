@@ -146,7 +146,7 @@ func BenchmarkJsonWithCallerFull(b *testing.B) {
 	b.ResetTimer()
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
-			log.Infow("The quick brown fox jumps over the lazy dog", Value("k1", "bar"), Value("k2", 123), Value("k3", 4.56), Value("k4", []int{1, 2, 3, 4, 5}))
+			log.With(context.Background()).Infow("The quick brown fox jumps over the lazy dog", Value("k1", "bar"), Value("k2", 123), Value("k3", 4.56), Value("k4", []int{1, 2, 3, 4, 5}))
 		}
 	})
 	if stream.WriteCount() != uint64(b.N) {
