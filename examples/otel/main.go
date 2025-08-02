@@ -60,26 +60,25 @@ func (c *ConsoleLogger) Log(ctx context.Context, level mo.Level, msg string, kv 
 		buf.WriteString("]")
 	}
 
-	levelStr := level.Abbr()
+	levelStr := fmt.Sprintf("[%s]", level.Char())
 	switch level {
 	case mo.LevelDebug:
-		levelStr = color.BgGray().White().String("[D]")
+		levelStr = color.BgGray().White().String(levelStr)
 		msg = color.Gray().String(msg)
 	case mo.LevelInfo:
-		levelStr = color.BgBlue().White().String("[I]")
+		levelStr = color.BgBlue().White().String(levelStr)
 	case mo.LevelWarn:
-		levelStr = color.BgYellow().White().String("[W]")
+		levelStr = color.BgYellow().White().String(levelStr)
 		msg = color.Yellow().String(msg)
 	case mo.LevelError:
-		levelStr = color.BgRed().White().String("[E]")
+		levelStr = color.BgRed().White().String(levelStr)
 		msg = color.Red().String(msg)
 	case mo.LevelFatal:
-		levelStr = color.BgRed().White().String("[F]")
+		levelStr = color.BgRed().White().String(levelStr)
 		msg = color.Red().String(msg)
 	}
-	// buf.WriteString("[")
+
 	buf.WriteString(levelStr)
-	// buf.WriteString("] ")
 	buf.WriteString(" ")
 	buf.WriteString(msg)
 
@@ -170,7 +169,6 @@ func main() {
 		},
 	}
 	l := mo.New(ctx,
-		// mo.DefaultRecorder,
 		logger,
 		mo.Value("ts", mo.Timestamp("2006-01-02 15:04:05.000")),
 		mo.Value("caller", mo.Caller(3)),

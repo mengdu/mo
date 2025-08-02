@@ -59,6 +59,23 @@ func (l Level) Abbr() string {
 	}
 }
 
+func (l Level) Char() string {
+	switch l {
+	case LevelDebug:
+		return "D"
+	case LevelInfo:
+		return "I"
+	case LevelWarn:
+		return "W"
+	case LevelError:
+		return "E"
+	case LevelFatal:
+		return "F"
+	default:
+		return ""
+	}
+}
+
 // ParseLevel parses a level string into a logger Level value.
 func ParseLevel(s string) Level {
 	switch strings.ToUpper(s) {
