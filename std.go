@@ -35,7 +35,7 @@ func (r *stdRecorder) Log(ctx context.Context, level Level, msg string, kv []Key
 		}
 	}
 
-	if ts == "" {
+	if ts != "" {
 		buf.WriteString("[")
 		buf.WriteString(ts)
 		buf.WriteString("]")
