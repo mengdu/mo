@@ -1,50 +1,77 @@
 package mo
 
-import "fmt"
+import "strings"
 
+// Level is a logger level.
 type Level int8
 
-func (l Level) String() string {
-	if b, err := l.MarshalText(); err == nil {
-		return string(b)
-	} else {
-		return "unknown"
-	}
-}
-
-func (l Level) MarshalText() ([]byte, error) {
-	switch l {
-	case LEVEL_NONE:
-		return []byte("none"), nil
-	case LEVEL_ERROR:
-		return []byte("error"), nil
-	case LEVEL_WARN:
-		return []byte("warn"), nil
-	case LEVEL_INFO:
-		return []byte("info"), nil
-	case LEVEL_LOG:
-		return []byte("log"), nil
-	case LEVEL_SUCCESS:
-		return []byte("success"), nil
-	case LEVEL_DEBUG:
-		return []byte("debug"), nil
-	case LEVEL_ALL:
-		return []byte("all"), nil
-	}
-	return []byte(fmt.Sprintf("%d", l)), nil
-}
+// LevelKey is logger level key.
+const LevelKey = "level"
 
 const (
-	LEVEL_NONE Level = iota
-	LEVEL_ERROR
-	LEVEL_WARN
-	LEVEL_INFO
-	LEVEL_LOG
-	LEVEL_SUCCESS
-	LEVEL_DEBUG
-	LEVEL_ALL
+	// LevelDebug is logger debug level.
+	LevelDebug Level = iota - 1
+	// LevelInfo is logger info level.
+	LevelInfo
+	// LevelWarn is logger warn level.
+	LevelWarn
+	// LevelError is logger error level.
+	LevelError
+	// LevelFatal is logger fatal level
+	LevelFatal
 )
 
-func isEnableLevel(a Level, b Level) bool {
-	return b <= a
+func (l Level) Key() string {
+	return LevelKey
+}
+
+func (l Level) String() string {
+	switch l {
+	case LevelDebug:
+		return "DEBUG"
+	case LevelInfo:
+		return "INFO"
+	case LevelWarn:
+		return "WARN"
+	case LevelError:
+		return "ERROR"
+	case LevelFatal:
+		return "FATAL"
+	default:
+		return ""
+	}
+}
+
+func (l Level) Abbr() string {
+	switch l {
+	case LevelDebug:
+		return "DBG"
+	case LevelInfo:
+		return "INF"
+	case LevelWarn:
+		return "WRN"
+	case LevelError:
+		return "ERR"
+	case LevelFatal:
+		return "FTL"
+	default:
+		return ""
+	}
+}
+
+// ParseLevel parses a level string into a logger Level value.
+func ParseLevel(s string) Level {
+	switch strings.ToUpper(s) {
+	case "DEBUG":
+		return LevelDebug
+	case "INFO":
+		return LevelInfo
+	case "WARN":
+		return LevelWarn
+	case "ERROR":
+		return LevelError
+	case "FATAL":
+		return LevelFatal
+	}
+	return LevelInfo
 }

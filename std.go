@@ -1,82 +1,186 @@
 package mo
 
 import (
+	"bytes"
+	"context"
+	"fmt"
+	"io"
 	"os"
+	"sync"
 )
 
-var Std = &Logger{
-	Stdout:   os.Stdout,
-	Stderr:   os.Stderr,
-	Level:    LEVEL_ALL,
-	Formater: &TextForamter{},
-	Caller:   false,
-	// mu:       sync.Mutex{},
+// Ensure stdRecorder implements the Recorder interface.
+var _ Recorder = (*stdRecorder)(nil)
+
+// stdRecorder is a Recorder implementation that writes log messages to standard output and error.
+type stdRecorder struct {
+	stdout io.Writer  // Standard output writer
+	stderr io.Writer  // Standard error writer
+	mu     sync.Mutex // Mutex for concurrent access
+	pool   *sync.Pool // Pool for reusing bytes.Buffer objects
 }
 
-func Sprintf(format string, args ...any) string {
-	return Std.Sprintf(format, args...)
+// Log writes a log message to the appropriate output (stdout or stderr) based on the log level.
+func (r *stdRecorder) Log(ctx context.Context, level Level, msg string, kv []KeyValue) {
+	buf := r.pool.Get().(*bytes.Buffer)
+	defer r.pool.Put(buf)
+	caller := ""
+	for _, v := range kv {
+		if v.Key() == "ts" {
+			buf.WriteString("[")
+			fmt.Fprintf(buf, "%v", v.Value())
+			buf.WriteString("]")
+		}
+		if v.Key() == "caller" {
+			caller = v.Value().(string)
+		}
+	}
+
+	buf.WriteString("[")
+	buf.WriteString(level.Abbr())
+	buf.WriteString("] ")
+	buf.WriteString(msg)
+
+	i := 0
+	for _, v := range kv {
+		if v.Key() == "ts" || v.Key() == "caller" {
+			continue
+		}
+
+		if i > 0 {
+			buf.WriteString(", ")
+		} else {
+			buf.WriteString(" ")
+		}
+		fmt.Fprintf(buf, "%s=%v", v.Key(), v.Value())
+		i++
+	}
+	if caller != "" {
+		buf.WriteString(" ")
+		buf.WriteString(caller)
+	}
+	buf.WriteByte('\n')
+	defer buf.Reset()
+
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	if level >= LevelError {
+		r.stderr.Write(buf.Bytes())
+		return
+	}
+	r.stdout.Write(buf.Bytes())
 }
 
-func With(meta map[string]any) *Entry {
-	return Std.With(meta)
+// DefaultRecorder is the default Recorder implementation that writes to os.Stdout and os.Stderr.
+var DefaultRecorder = &stdRecorder{
+	stdout: os.Stdout,
+	stderr: os.Stderr,
+	pool: &sync.Pool{
+		New: func() interface{} {
+			return new(bytes.Buffer)
+		},
+	},
 }
 
-func WithTag(tag string) *Entry {
-	return Std.WithTag(tag)
+// std is the default Logger instance used by the package-level logging functions.
+var std = New(context.Background(), DefaultRecorder)
+
+// Enabled returns whether the debug log level is enabled for the default logger.
+func Enabled() bool {
+	return std.Enabled(LevelDebug)
 }
 
-func Error(s ...any) {
-	Std.Error(s...)
+// SetRecorder sets the recorder for the default logger.
+func SetRecorder(out Recorder) {
+	std.SetRecorder(out)
 }
 
-func Errorf(format string, s ...any) {
-	Std.Errorf(format, s...)
+// SetLevel sets the log level for the default logger.
+func SetLevel(level Level) {
+	std.SetLevel(level)
 }
 
-func Panic(s ...any) {
-	Std.Panic(s...)
+// SetBase sets the base key-value pairs for the default logger.
+func SetBase(kv ...KeyValue) {
+	std.SetBase(kv...)
 }
 
-func Panicf(format string, s ...any) {
-	Std.Panicf(format, s...)
+// Debug logs a message at the debug level using the default logger.
+func Debug(a ...interface{}) {
+	std.Debug(a...)
 }
 
-func Warn(s ...any) {
-	Std.Warn(s...)
+// Info logs a message at the info level using the default logger.
+func Info(a ...interface{}) {
+	std.Info(a...)
 }
 
-func Warnf(format string, s ...any) {
-	Std.Warnf(format, s...)
+// Warn logs a message at the warn level using the default logger.
+func Warn(a ...interface{}) {
+	std.Warn(a...)
 }
 
-func Info(s ...any) {
-	Std.Info(s...)
+// Error logs a message at the error level using the default logger.
+func Error(a ...interface{}) {
+	std.Error(a...)
 }
 
-func Infof(format string, s ...any) {
-	Std.Infof(format, s...)
+// Fatal logs a message at the fatal level using the default logger and exits the program.
+func Fatal(a ...interface{}) {
+	std.Fatal(a...)
 }
 
-func Log(s ...any) {
-	Std.Log(s...)
+// Debugf logs a formatted message at the debug level using the default logger.
+func Debugf(format string, a ...interface{}) {
+	std.Debugf(format, a...)
 }
 
-func Logf(format string, s ...any) {
-	Std.Logf(format, s...)
+// Infof logs a formatted message at the info level using the default logger.
+func Infof(format string, a ...interface{}) {
+	std.Infof(format, a...)
 }
 
-func Success(s ...any) {
-	Std.Success(s...)
+// Warnf logs a formatted message at the warn level using the default logger.
+func Warnf(format string, a ...interface{}) {
+	std.Warnf(format, a...)
 }
 
-func Successf(format string, s ...any) {
-	Std.Successf(format, s...)
+// Errorf logs a formatted message at the error level using the default logger.
+func Errorf(format string, a ...interface{}) {
+	std.Errorf(format, a...)
 }
 
-func Debug(s ...any) {
-	Std.Debug(s...)
+// Fatalf logs a formatted message at the fatal level using the default logger and exits the program.
+func Fatalf(format string, a ...interface{}) {
+	std.Fatalf(format, a...)
 }
 
-func Debugf(format string, s ...any) {
-	Std.Debugf(format, s...)
+// Debugw logs a message with key-value pairs at the debug level using the default logger.
+func Debugw(msg string, kv ...KeyValue) {
+	std.Debugw(msg, kv...)
+}
+
+// Infow logs a message with key-value pairs at the info level using the default logger.
+func Infow(msg string, kv ...KeyValue) {
+	std.Infow(msg, kv...)
+}
+
+// Warnw logs a message with key-value pairs at the warn level using the default logger.
+func Warnw(msg string, kv ...KeyValue) {
+	std.Warnw(msg, kv...)
+}
+
+// Errorw logs a message with key-value pairs at the error level using the default logger.
+func Errorw(msg string, kv ...KeyValue) {
+	std.Errorw(msg, kv...)
+}
+
+// Fatalw logs a message with key-value pairs at the fatal level using the default logger and exits the program.
+func Fatalw(msg string, kv ...KeyValue) {
+	std.Fatalw(msg, kv...)
+}
+
+// With creates a new Logger instance with the same configuration as the default logger but using the specified context.
+func With(ctx context.Context, kv ...KeyValue) *Logger {
+	return std.With(ctx)
 }
