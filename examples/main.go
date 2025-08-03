@@ -1,6 +1,8 @@
 package main
 
 import (
+	"context"
+
 	"github.com/mengdu/mo"
 )
 
@@ -30,4 +32,5 @@ func main() {
 	// mo.Fatalw("fatalw message", mo.Value("k1", 123), mo.Value("k2", true), mo.Value("k3", []int{1, 2, 3}))
 
 	mo.Infow("replace ts, caller", mo.Value("ts", "xxx"), mo.Value("caller", "path-to-xxx.go:123"))
+	mo.With(context.Background()).Infow("test with context", mo.Value("k1", 123), mo.Value("k2", true), mo.Value("k3", []int{1, 2, 3}))
 }

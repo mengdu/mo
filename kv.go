@@ -14,8 +14,16 @@ import (
 
 type KeyValue [2]interface{}
 
-func (v KeyValue) Key() string        { return fmt.Sprint(v[0]) }
-func (v KeyValue) Value() interface{} { return v[1] }
+func (v KeyValue) Key() string {
+	if v, ok := v[0].(string); ok {
+		return v
+	}
+	return fmt.Sprint(v[0])
+}
+
+func (v KeyValue) Value() interface{} {
+	return v[1]
+}
 
 func Value(key string, value interface{}) KeyValue {
 	return KeyValue{key, value}

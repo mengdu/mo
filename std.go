@@ -184,3 +184,18 @@ func Errorw(msg string, kv ...KeyValue) {
 func Fatalw(msg string, kv ...KeyValue) {
 	std.Fatalw(msg, kv...)
 }
+
+func With(ctx context.Context) *Logger {
+	log := std.With(ctx)
+	base := make([]KeyValue, len(log.base))
+	for i, v := range log.base {
+		// replace caller
+		if v.Key() == "caller" {
+			base[i] = Value(v.Key(), Caller(3))
+			continue
+		}
+		base[i] = v
+	}
+	log.SetBase(base...)
+	return log
+}
