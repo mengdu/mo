@@ -16,11 +16,14 @@ type Recorder interface {
 // New creates a new Logger instance with the specified context, recorder, and base key-value pairs.
 func New(ctx context.Context, out Recorder, kv ...KeyValue) *Logger {
 	return &Logger{
-		ctx:     ctx,
-		base:    kv,
-		out:     out,
-		level:   LevelDebug,
-		sprint:  fmt.Sprint,
+		ctx:   ctx,
+		base:  kv,
+		out:   out,
+		level: LevelDebug,
+		sprint: func(a ...interface{}) string {
+			s := fmt.Sprintln(a...)
+			return s[:len(s)-1] // remove \n at the end
+		},
 		sprintf: fmt.Sprintf,
 		pool: &sync.Pool{
 			New: func() interface{} {

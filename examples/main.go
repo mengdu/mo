@@ -13,11 +13,11 @@ func main() {
 		mo.Value("tag", "dev"),
 	)
 
-	mo.Debug("debug message")
-	mo.Info("info message")
-	mo.Warn("warn message")
-	mo.Error("error message")
-	// mo.Fatal("fatal message")
+	mo.Debug("debug message", 123)
+	mo.Info("info message", 123)
+	mo.Warn("warn message", 123)
+	mo.Error("error message", 123)
+	// mo.Fatal("fatal message", 123)
 
 	mo.Debugf("debugf message %s", "test")
 	mo.Infof("infof message %s", "test")
