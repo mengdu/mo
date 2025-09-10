@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"sync"
 )
 
 // Recorder is an interface for recording log messages.
@@ -25,11 +24,6 @@ func New(ctx context.Context, out Recorder, kv ...KeyValue) *Logger {
 			return s[:len(s)-1] // remove \n at the end
 		},
 		sprintf: fmt.Sprintf,
-		pool: &sync.Pool{
-			New: func() interface{} {
-				return new(KeyValue)
-			},
-		},
 	}
 }
 
@@ -41,7 +35,6 @@ type Logger struct {
 	out     Recorder                                     // Recorder for outputting log messages
 	sprint  func(a ...interface{}) string                // Function for formatting arguments without a format string
 	sprintf func(format string, a ...interface{}) string // Function for formatting arguments with a format string
-	pool    *sync.Pool                                   // Pool for reusing KeyValue objects
 }
 
 // With creates a new Logger instance with the same configuration but using the specified context.
@@ -53,7 +46,6 @@ func (l Logger) With(ctx context.Context) *Logger {
 		level:   l.level,
 		sprint:  l.sprint,
 		sprintf: l.sprintf,
-		pool:    l.pool,
 	}
 }
 
