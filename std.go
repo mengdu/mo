@@ -21,7 +21,7 @@ type stdRecorder struct {
 }
 
 // Log writes a log message to the appropriate output (stdout or stderr) based on the log level.
-func (r *stdRecorder) Log(ctx context.Context, level Level, msg string, kv []KeyValue) {
+func (r *stdRecorder) Log(ctx context.Context, level Level, msg string, kv []Field) {
 	buf := r.pool.Get().(*bytes.Buffer)
 	defer r.pool.Put(buf)
 	ts := ""
@@ -106,7 +106,7 @@ func SetLevel(level Level) {
 }
 
 // SetBase sets the base key-value pairs for the default logger.
-func SetBase(kv ...KeyValue) {
+func SetBase(kv ...Field) {
 	std.SetBase(kv...)
 }
 
@@ -161,33 +161,33 @@ func Fatalf(format string, a ...interface{}) {
 }
 
 // Debugw logs a message with key-value pairs at the debug level using the default logger.
-func Debugw(msg string, kv ...KeyValue) {
+func Debugw(msg string, kv ...Field) {
 	std.Debugw(msg, kv...)
 }
 
 // Infow logs a message with key-value pairs at the info level using the default logger.
-func Infow(msg string, kv ...KeyValue) {
+func Infow(msg string, kv ...Field) {
 	std.Infow(msg, kv...)
 }
 
 // Warnw logs a message with key-value pairs at the warn level using the default logger.
-func Warnw(msg string, kv ...KeyValue) {
+func Warnw(msg string, kv ...Field) {
 	std.Warnw(msg, kv...)
 }
 
 // Errorw logs a message with key-value pairs at the error level using the default logger.
-func Errorw(msg string, kv ...KeyValue) {
+func Errorw(msg string, kv ...Field) {
 	std.Errorw(msg, kv...)
 }
 
 // Fatalw logs a message with key-value pairs at the fatal level using the default logger and exits the program.
-func Fatalw(msg string, kv ...KeyValue) {
+func Fatalw(msg string, kv ...Field) {
 	std.Fatalw(msg, kv...)
 }
 
 func With(ctx context.Context) *Logger {
 	log := std.With(ctx)
-	base := make([]KeyValue, len(log.base))
+	base := make([]Field, len(log.base))
 	for i, v := range log.base {
 		// replace caller
 		if v.Key() == "caller" {

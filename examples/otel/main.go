@@ -20,7 +20,7 @@ type JSONLogger struct {
 	encoder *json.Encoder
 }
 
-func (l *JSONLogger) Log(ctx context.Context, level mo.Level, msg string, kv []mo.KeyValue) {
+func (l *JSONLogger) Log(ctx context.Context, level mo.Level, msg string, kv []mo.Field) {
 	line := map[string]interface{}{
 		"level": strings.ToLower(level.String()),
 		"msg":   msg,
@@ -40,7 +40,7 @@ type ConsoleLogger struct {
 	pool   *sync.Pool
 }
 
-func (c *ConsoleLogger) Log(ctx context.Context, level mo.Level, msg string, kv []mo.KeyValue) {
+func (c *ConsoleLogger) Log(ctx context.Context, level mo.Level, msg string, kv []mo.Field) {
 	buf := c.pool.Get().(*bytes.Buffer)
 	defer c.pool.Put(buf)
 	caller := ""

@@ -9,11 +9,11 @@ import (
 // Recorder is an interface for recording log messages.
 type Recorder interface {
 	// Log records a log message with the specified level and key-value pairs.
-	Log(ctx context.Context, level Level, msg string, kv []KeyValue)
+	Log(ctx context.Context, level Level, msg string, kv []Field)
 }
 
 // New creates a new Logger instance with the specified context, recorder, and base key-value pairs.
-func New(ctx context.Context, out Recorder, kv ...KeyValue) *Logger {
+func New(ctx context.Context, out Recorder, kv ...Field) *Logger {
 	return &Logger{
 		ctx:   ctx,
 		base:  kv,
@@ -30,7 +30,7 @@ func New(ctx context.Context, out Recorder, kv ...KeyValue) *Logger {
 // Logger is a logging client that provides methods for emitting log messages at different levels.
 type Logger struct {
 	ctx     context.Context                              // Context for the logger
-	base    []KeyValue                                   // Base key-value pairs added to all log messages
+	base    []Field                                      // Base key-value pairs added to all log messages
 	level   Level                                        // Minimum log level to emit
 	out     Recorder                                     // Recorder for outputting log messages
 	sprint  func(a ...interface{}) string                // Function for formatting arguments without a format string
@@ -65,7 +65,7 @@ func (l *Logger) SetRecorder(out Recorder) {
 }
 
 // SetBase sets the base key-value pairs added to all log messages.
-func (l *Logger) SetBase(kv ...KeyValue) {
+func (l *Logger) SetBase(kv ...Field) {
 	l.base = kv
 }
 
@@ -80,7 +80,7 @@ func (l *Logger) SetSprintf(sprintf func(format string, a ...interface{}) string
 }
 
 // log is the internal method for logging messages at the specified level.
-func (l Logger) log(level Level, msg string, kv ...KeyValue) {
+func (l Logger) log(level Level, msg string, kv ...Field) {
 	if !l.Enabled(level) {
 		return
 	}
@@ -88,7 +88,7 @@ func (l Logger) log(level Level, msg string, kv ...KeyValue) {
 		return
 	}
 
-	kvs := make([]KeyValue, 0, len(l.base)+len(kv))
+	kvs := make([]Field, 0, len(l.base)+len(kv))
 	kvs = append(kvs, l.base...)
 	kvs = append(kvs, kv...)
 
@@ -153,27 +153,27 @@ func (l Logger) Fatalf(format string, a ...interface{}) {
 }
 
 // Debugw logs a message with key-value pairs at the debug level.
-func (l Logger) Debugw(msg string, kv ...KeyValue) {
+func (l Logger) Debugw(msg string, kv ...Field) {
 	l.log(LevelDebug, msg, kv...)
 }
 
 // Infow logs a message with key-value pairs at the info level.
-func (l Logger) Infow(msg string, kv ...KeyValue) {
+func (l Logger) Infow(msg string, kv ...Field) {
 	l.log(LevelInfo, msg, kv...)
 }
 
 // Warnw logs a message with key-value pairs at the warn level.
-func (l Logger) Warnw(msg string, kv ...KeyValue) {
+func (l Logger) Warnw(msg string, kv ...Field) {
 	l.log(LevelWarn, msg, kv...)
 }
 
 // Errorw logs a message with key-value pairs at the error level.
-func (l Logger) Errorw(msg string, kv ...KeyValue) {
+func (l Logger) Errorw(msg string, kv ...Field) {
 	l.log(LevelError, msg, kv...)
 }
 
 // Fatalw logs a message with key-value pairs at the fatal level and exits the program.
-func (l Logger) Fatalw(msg string, kv ...KeyValue) {
+func (l Logger) Fatalw(msg string, kv ...Field) {
 	l.log(LevelFatal, msg, kv...)
 	os.Exit(1)
 }

@@ -28,7 +28,7 @@ type JSONLogger struct {
 	mu      sync.Mutex
 }
 
-func (l *JSONLogger) Log(ctx context.Context, level Level, msg string, kv []KeyValue) {
+func (l *JSONLogger) Log(ctx context.Context, level Level, msg string, kv []Field) {
 	line := map[string]interface{}{
 		"level": strings.ToLower(level.String()),
 		"msg":   msg,
