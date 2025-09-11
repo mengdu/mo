@@ -90,9 +90,9 @@ var DefaultRecorder = &stdRecorder{
 // std is the default Logger instance used by the package-level logging functions.
 var std = New(context.Background(), DefaultRecorder)
 
-// Enabled returns whether the debug log level is enabled for the default logger.
-func Enabled() bool {
-	return std.Enabled(LevelDebug)
+// Enabled returns whether logging at the specified level is enabled for the default logger.
+func Enabled(level Level) bool {
+	return std.Enabled(level)
 }
 
 // SetRecorder sets the recorder for the default logger.
