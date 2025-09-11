@@ -45,7 +45,7 @@ func (l *JSONLogger) Log(ctx context.Context, level Level, msg string, kv []Fiel
 
 func BenchmarkDefault(b *testing.B) {
 	stream := &blackholeStream{}
-	std.SetRecorder(&stdRecorder{
+	std.Logger.SetRecorder(&stdRecorder{
 		stdout: stream,
 		stderr: stream,
 		pool: &sync.Pool{
@@ -67,7 +67,7 @@ func BenchmarkDefault(b *testing.B) {
 
 func BenchmarkDefaultWithCaller(b *testing.B) {
 	stream := &blackholeStream{}
-	std.SetRecorder(&stdRecorder{
+	std.Logger.SetRecorder(&stdRecorder{
 		stdout: stream,
 		stderr: stream,
 		pool: &sync.Pool{
@@ -78,7 +78,7 @@ func BenchmarkDefaultWithCaller(b *testing.B) {
 	})
 	SetBase(
 		Value("ts", Timestamp("2006-01-02 15:04:05.000")),
-		Value("caller", Caller(3)),
+		Value("caller", Caller()),
 	)
 	b.ResetTimer()
 	b.RunParallel(func(pb *testing.PB) {
@@ -96,11 +96,7 @@ func BenchmarkJson(b *testing.B) {
 	out := &JSONLogger{
 		encoder: json.NewEncoder(stream),
 	}
-	log := New(context.Background(),
-		out,
-		// Value("ts", Timestamp("2006-01-02 15:04:05.000")),
-		// Value("caller", Caller(3)),
-	)
+	log := New(context.Background(), NewLogger(out))
 	b.ResetTimer()
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
@@ -118,9 +114,10 @@ func BenchmarkJsonWithCaller(b *testing.B) {
 		encoder: json.NewEncoder(stream),
 	}
 	log := New(context.Background(),
-		out,
-		Value("ts", Timestamp("2006-01-02 15:04:05.000")),
-		Value("caller", Caller(3)),
+		NewLogger(out,
+			Value("ts", Timestamp("2006-01-02 15:04:05.000")),
+			Value("caller", Caller()),
+		),
 	)
 	b.ResetTimer()
 	b.RunParallel(func(pb *testing.PB) {
@@ -139,9 +136,10 @@ func BenchmarkJsonWithCallerFull(b *testing.B) {
 		encoder: json.NewEncoder(stream),
 	}
 	log := New(context.Background(),
-		out,
-		Value("ts", Timestamp("2006-01-02 15:04:05.000")),
-		Value("caller", Caller(3)),
+		NewLogger(out,
+			Value("ts", Timestamp("2006-01-02 15:04:05.000")),
+			Value("caller", Caller()),
+		),
 	)
 	b.ResetTimer()
 	b.RunParallel(func(pb *testing.PB) {

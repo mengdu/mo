@@ -36,16 +36,29 @@ var (
 	cwdOnce sync.Once
 )
 
-func Caller(depth int) Valuer {
+type ICaller interface {
+	Caller(skip int) string
+}
+
+// static check
+var _ ICaller = caller{}
+
+type caller struct{}
+
+func (caller) Caller(skip int) string {
+	_, file, line, _ := runtime.Caller(skip)
+	cwdOnce.Do(func() {
+		cwd, _ = os.Getwd()
+	})
+	if strings.Index(file, cwd) == 0 {
+		file, _ = filepath.Rel(cwd, file)
+	}
+	return file + ":" + strconv.Itoa(line)
+}
+
+func Caller() Valuer {
 	return func(ctx context.Context) interface{} {
-		_, file, line, _ := runtime.Caller(depth)
-		cwdOnce.Do(func() {
-			cwd, _ = os.Getwd()
-		})
-		if strings.Index(file, cwd) == 0 {
-			file, _ = filepath.Rel(cwd, file)
-		}
-		return file + ":" + strconv.Itoa(line)
+		return caller{}
 	}
 }
 

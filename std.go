@@ -1,201 +1,112 @@
 package mo
 
 import (
-	"bytes"
 	"context"
-	"fmt"
-	"io"
 	"os"
-	"sync"
 )
 
-// Ensure stdRecorder implements the Recorder interface.
-var _ Recorder = (*stdRecorder)(nil)
-
-// stdRecorder is a Recorder implementation that writes log messages to standard output and error.
-type stdRecorder struct {
-	stdout io.Writer  // Standard output writer
-	stderr io.Writer  // Standard error writer
-	mu     sync.Mutex // Mutex for concurrent access
-	pool   *sync.Pool // Pool for reusing bytes.Buffer objects
-}
-
-// Log writes a log message to the appropriate output (stdout or stderr) based on the log level.
-func (r *stdRecorder) Log(ctx context.Context, level Level, msg string, kv []Field) {
-	buf := r.pool.Get().(*bytes.Buffer)
-	defer r.pool.Put(buf)
-	ts := ""
-	caller := ""
-	for _, v := range kv {
-		if v.Key() == "ts" {
-			ts = fmt.Sprint(v.Value())
-		}
-		if v.Key() == "caller" {
-			caller = v.Value().(string)
-		}
-	}
-
-	if ts != "" {
-		buf.WriteString("[")
-		buf.WriteString(ts)
-		buf.WriteString("]")
-	}
-
-	buf.WriteString("[")
-	buf.WriteString(level.Abbr())
-	buf.WriteString("] ")
-	buf.WriteString(msg)
-
-	i := 0
-	for _, v := range kv {
-		if v.Key() == "ts" || v.Key() == "caller" {
-			continue
-		}
-
-		if i > 0 {
-			buf.WriteString(", ")
-		} else {
-			buf.WriteString(" ")
-		}
-		fmt.Fprintf(buf, "%s=%v", v.Key(), v.Value())
-		i++
-	}
-	if caller != "" {
-		buf.WriteString(" ")
-		buf.WriteString(caller)
-	}
-	buf.WriteByte('\n')
-	defer buf.Reset()
-
-	r.mu.Lock()
-	defer r.mu.Unlock()
-	if level >= LevelError {
-		r.stderr.Write(buf.Bytes())
-		return
-	}
-	r.stdout.Write(buf.Bytes())
-}
-
-// DefaultRecorder is the default Recorder implementation that writes to os.Stdout and os.Stderr.
-var DefaultRecorder = &stdRecorder{
-	stdout: os.Stdout,
-	stderr: os.Stderr,
-	pool: &sync.Pool{
-		New: func() interface{} {
-			return new(bytes.Buffer)
-		},
-	},
-}
-
 // std is the default Logger instance used by the package-level logging functions.
-var std = New(context.Background(), DefaultRecorder)
+var std = New(context.Background(), NewLogger(DefaultRecorder))
+
+// With returns a new Helper instance with the specified context.
+func With(ctx context.Context) *Helper {
+	return std.With(ctx)
+}
 
 // Enabled returns whether logging at the specified level is enabled for the default logger.
 func Enabled(level Level) bool {
-	return std.Enabled(level)
+	return std.Logger.Enabled(level)
 }
 
 // SetRecorder sets the recorder for the default logger.
 func SetRecorder(out Recorder) {
-	std.SetRecorder(out)
+	std.Logger.SetRecorder(out)
 }
 
 // SetLevel sets the log level for the default logger.
 func SetLevel(level Level) {
-	std.SetLevel(level)
+	std.Logger.SetLevel(level)
 }
 
 // SetBase sets the base key-value pairs for the default logger.
 func SetBase(kv ...Field) {
-	std.SetBase(kv...)
+	std.Logger.SetBase(kv...)
 }
 
-// Debug logs a message at the debug level using the default logger.
+// Debug logs a message at the debug level.
 func Debug(a ...interface{}) {
-	std.Debug(a...)
+	std.Logger.Log(std.ctx, LevelDebug, false, "", a, nil)
 }
 
-// Info logs a message at the info level using the default logger.
+// Info logs a message at the info level.
 func Info(a ...interface{}) {
-	std.Info(a...)
+	std.Logger.Log(std.ctx, LevelInfo, false, "", a, nil)
 }
 
-// Warn logs a message at the warn level using the default logger.
+// Warn logs a message at the warn level.
 func Warn(a ...interface{}) {
-	std.Warn(a...)
+	std.Logger.Log(std.ctx, LevelWarn, false, "", a, nil)
 }
 
-// Error logs a message at the error level using the default logger.
+// Error logs a message at the error level.
 func Error(a ...interface{}) {
-	std.Error(a...)
+	std.Logger.Log(std.ctx, LevelError, false, "", a, nil)
 }
 
-// Fatal logs a message at the fatal level using the default logger and exits the program.
+// Fatal logs a message at the fatal level and exits the program.
 func Fatal(a ...interface{}) {
-	std.Fatal(a...)
+	std.Logger.Log(std.ctx, LevelFatal, false, "", a, nil)
+	os.Exit(1)
 }
 
-// Debugf logs a formatted message at the debug level using the default logger.
+// Debugf logs a formatted message at the debug level.
 func Debugf(format string, a ...interface{}) {
-	std.Debugf(format, a...)
+	std.Logger.Log(std.ctx, LevelDebug, true, format, a, nil)
 }
 
-// Infof logs a formatted message at the info level using the default logger.
+// Infof logs a formatted message at the info level.
 func Infof(format string, a ...interface{}) {
-	std.Infof(format, a...)
+	std.Logger.Log(std.ctx, LevelInfo, true, format, a, nil)
 }
 
-// Warnf logs a formatted message at the warn level using the default logger.
+// Warnf logs a formatted message at the warn level.
 func Warnf(format string, a ...interface{}) {
-	std.Warnf(format, a...)
+	std.Logger.Log(std.ctx, LevelWarn, true, format, a, nil)
 }
 
-// Errorf logs a formatted message at the error level using the default logger.
+// Errorf logs a formatted message at the error level.
 func Errorf(format string, a ...interface{}) {
-	std.Errorf(format, a...)
+	std.Logger.Log(std.ctx, LevelError, true, format, a, nil)
 }
 
-// Fatalf logs a formatted message at the fatal level using the default logger and exits the program.
+// Fatalf logs a formatted message at the fatal level and exits the program.
 func Fatalf(format string, a ...interface{}) {
-	std.Fatalf(format, a...)
+	std.Logger.Log(std.ctx, LevelFatal, true, format, a, nil)
+	os.Exit(1)
 }
 
-// Debugw logs a message with key-value pairs at the debug level using the default logger.
+// Debugw logs a message with key-value pairs at the debug level.
 func Debugw(msg string, kv ...Field) {
-	std.Debugw(msg, kv...)
+	std.Logger.Log(std.ctx, LevelDebug, false, "", []interface{}{msg}, kv)
 }
 
-// Infow logs a message with key-value pairs at the info level using the default logger.
+// Infow logs a message with key-value pairs at the info level.
 func Infow(msg string, kv ...Field) {
-	std.Infow(msg, kv...)
+	std.Logger.Log(std.ctx, LevelInfo, false, "", []interface{}{msg}, kv)
 }
 
-// Warnw logs a message with key-value pairs at the warn level using the default logger.
+// Warnw logs a message with key-value pairs at the warn level.
 func Warnw(msg string, kv ...Field) {
-	std.Warnw(msg, kv...)
+	std.Logger.Log(std.ctx, LevelWarn, false, "", []interface{}{msg}, kv)
 }
 
-// Errorw logs a message with key-value pairs at the error level using the default logger.
+// Errorw logs a message with key-value pairs at the error level.
 func Errorw(msg string, kv ...Field) {
-	std.Errorw(msg, kv...)
+	std.Logger.Log(std.ctx, LevelError, false, "", []interface{}{msg}, kv)
 }
 
-// Fatalw logs a message with key-value pairs at the fatal level using the default logger and exits the program.
+// Fatalw logs a message with key-value pairs at the fatal level and exits the program.
 func Fatalw(msg string, kv ...Field) {
-	std.Fatalw(msg, kv...)
-}
-
-func With(ctx context.Context) *Logger {
-	log := std.With(ctx)
-	base := make([]Field, len(log.base))
-	for i, v := range log.base {
-		// replace caller
-		if v.Key() == "caller" {
-			base[i] = Value(v.Key(), Caller(3))
-			continue
-		}
-		base[i] = v
-	}
-	log.SetBase(base...)
-	return log
+	std.Logger.Log(std.ctx, LevelFatal, false, "", []interface{}{msg}, kv)
+	os.Exit(1)
 }

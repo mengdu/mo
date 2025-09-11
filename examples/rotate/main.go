@@ -49,7 +49,7 @@ func main() {
 	mo.SetRecorder(logger)
 	mo.SetBase(
 		mo.Value("ts", mo.Timestamp("15:04:05.000")),
-		mo.Value("caller", mo.Caller(4)),
+		mo.Value("caller", mo.Caller()),
 		mo.Value("tag", "dev"),
 	)
 

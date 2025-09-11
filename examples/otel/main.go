@@ -168,17 +168,18 @@ func main() {
 			},
 		},
 	}
-	l := mo.New(ctx,
-		logger,
+	id, _ := os.Hostname()
+	log := mo.NewLogger(logger,
 		mo.Value("ts", mo.Timestamp("2006-01-02 15:04:05.000")),
-		mo.Value("caller", mo.Caller(3)),
-		// mo.Value("service.id", "demo-server"),
-		// mo.Value("service.version", "v1.2.3"),
-		// mo.Value("trace.id", TraceID()),
-		// mo.Value("span.id", SpanID()),
+		mo.Value("caller", mo.Caller()),
+		mo.Value("service.id", id),
+		mo.Value("service.version", "v1.2.3"),
+		mo.Value("trace.id", TraceID()),
+		mo.Value("span.id", SpanID()),
 	)
-	// l.SetLevel(mo.LevelError)
-	// l.SetLevel(mo.LevelInfo)
+	l := mo.New(ctx, log)
+	// l.Logger.SetLevel(mo.LevelError)
+	// l.Logger.SetLevel(mo.LevelInfo)
 
 	l.Debug("debug message")
 	l.Info("info message")
