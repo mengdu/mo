@@ -80,12 +80,20 @@ func (l *Logger) SetSprintf(sprintf func(format string, a ...interface{}) string
 }
 
 // log is the internal method for logging messages at the specified level.
-func (l Logger) log(level Level, msg string, kv ...Field) {
+func (l Logger) log(level Level, v []interface{}, kv []Field, format string, isFormat bool) {
 	if !l.Enabled(level) {
 		return
 	}
+
 	if l.out == nil {
 		return
+	}
+
+	msg := ""
+	if isFormat {
+		msg = l.sprintf(format, v...)
+	} else {
+		msg = l.sprint(v...)
 	}
 
 	kvs := make([]Field, 0, len(l.base)+len(kv))
@@ -102,78 +110,78 @@ func (l Logger) log(level Level, msg string, kv ...Field) {
 
 // Debug logs a message at the debug level.
 func (l Logger) Debug(a ...interface{}) {
-	l.log(LevelDebug, l.sprint(a...))
+	l.log(LevelDebug, a, nil, "", false)
 }
 
 // Info logs a message at the info level.
 func (l Logger) Info(a ...interface{}) {
-	l.log(LevelInfo, l.sprint(a...))
+	l.log(LevelInfo, a, nil, "", false)
 }
 
 // Warn logs a message at the warn level.
 func (l Logger) Warn(a ...interface{}) {
-	l.log(LevelWarn, l.sprint(a...))
+	l.log(LevelWarn, a, nil, "", false)
 }
 
 // Error logs a message at the error level.
 func (l Logger) Error(a ...interface{}) {
-	l.log(LevelError, l.sprint(a...))
+	l.log(LevelError, a, nil, "", false)
 }
 
 // Fatal logs a message at the fatal level and exits the program.
 func (l Logger) Fatal(a ...interface{}) {
-	l.log(LevelFatal, l.sprint(a...))
+	l.log(LevelFatal, a, nil, "", false)
 	os.Exit(1)
 }
 
 // Debugf logs a formatted message at the debug level.
 func (l Logger) Debugf(format string, a ...interface{}) {
-	l.log(LevelDebug, l.sprintf(format, a...))
+	l.log(LevelDebug, a, nil, format, true)
 }
 
 // Infof logs a formatted message at the info level.
 func (l Logger) Infof(format string, a ...interface{}) {
-	l.log(LevelInfo, l.sprintf(format, a...))
+	l.log(LevelInfo, a, nil, format, true)
 }
 
 // Warnf logs a formatted message at the warn level.
 func (l Logger) Warnf(format string, a ...interface{}) {
-	l.log(LevelWarn, l.sprintf(format, a...))
+	l.log(LevelWarn, a, nil, format, true)
 }
 
 // Errorf logs a formatted message at the error level.
 func (l Logger) Errorf(format string, a ...interface{}) {
-	l.log(LevelError, l.sprintf(format, a...))
+	l.log(LevelError, a, nil, format, true)
 }
 
 // Fatalf logs a formatted message at the fatal level and exits the program.
 func (l Logger) Fatalf(format string, a ...interface{}) {
-	l.log(LevelFatal, l.sprintf(format, a...))
+	l.log(LevelFatal, a, nil, format, true)
 	os.Exit(1)
 }
 
 // Debugw logs a message with key-value pairs at the debug level.
 func (l Logger) Debugw(msg string, kv ...Field) {
-	l.log(LevelDebug, msg, kv...)
+	l.log(LevelDebug, []interface{}{msg}, kv, "", false)
 }
 
 // Infow logs a message with key-value pairs at the info level.
 func (l Logger) Infow(msg string, kv ...Field) {
-	l.log(LevelInfo, msg, kv...)
+	l.log(LevelInfo, []interface{}{msg}, kv, "", false)
 }
 
 // Warnw logs a message with key-value pairs at the warn level.
 func (l Logger) Warnw(msg string, kv ...Field) {
-	l.log(LevelWarn, msg, kv...)
+	l.log(LevelWarn, []interface{}{msg}, kv, "", false)
 }
 
 // Errorw logs a message with key-value pairs at the error level.
 func (l Logger) Errorw(msg string, kv ...Field) {
-	l.log(LevelError, msg, kv...)
+	l.log(LevelError, []interface{}{msg}, kv, "", false)
 }
 
 // Fatalw logs a message with key-value pairs at the fatal level and exits the program.
 func (l Logger) Fatalw(msg string, kv ...Field) {
-	l.log(LevelFatal, msg, kv...)
+	l.log(LevelFatal, []interface{}{msg}, kv, "", false)
 	os.Exit(1)
 }
