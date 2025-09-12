@@ -5,15 +5,18 @@ import (
 	"os"
 )
 
+// Helper is a helper struct for logging.
 type Helper struct {
 	Logger *Logger
 	ctx    context.Context
 }
 
+// New returns a new Helper with the given context and logger.
 func New(ctx context.Context, logger *Logger) *Helper {
 	return &Helper{ctx: ctx, Logger: logger}
 }
 
+// With returns a new Helper with the given context.
 func (h *Helper) With(ctx context.Context) *Helper {
 	return &Helper{ctx: ctx, Logger: h.Logger}
 }
