@@ -9,7 +9,7 @@ import (
 func main() {
 	mo.SetBase(
 		mo.Value("ts", mo.Timestamp("15:04:05.000")),
-		mo.Value("caller", mo.Caller()),
+		mo.Value("caller", mo.Caller(3)),
 		mo.Value("tag", "dev"),
 	)
 
@@ -36,7 +36,7 @@ func main() {
 
 	log := mo.New(context.Background(), mo.NewLogger(
 		mo.DefaultRecorder,
-		mo.Value("caller", mo.Caller()),
+		mo.Value("caller", mo.Caller(3)),
 		mo.Value("ts", mo.Timestamp("15:04:05.000")),
 	))
 

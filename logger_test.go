@@ -78,7 +78,7 @@ func BenchmarkDefaultWithCaller(b *testing.B) {
 	})
 	SetBase(
 		Value("ts", Timestamp("2006-01-02 15:04:05.000")),
-		Value("caller", Caller()),
+		Value("caller", Caller(3)),
 	)
 	b.ResetTimer()
 	b.RunParallel(func(pb *testing.PB) {
@@ -116,7 +116,7 @@ func BenchmarkJsonWithCaller(b *testing.B) {
 	log := New(context.Background(),
 		NewLogger(out,
 			Value("ts", Timestamp("2006-01-02 15:04:05.000")),
-			Value("caller", Caller()),
+			Value("caller", Caller(3)),
 		),
 	)
 	b.ResetTimer()
@@ -138,7 +138,7 @@ func BenchmarkJsonWithCallerFull(b *testing.B) {
 	log := New(context.Background(),
 		NewLogger(out,
 			Value("ts", Timestamp("2006-01-02 15:04:05.000")),
-			Value("caller", Caller()),
+			Value("caller", Caller(3)),
 		),
 	)
 	b.ResetTimer()

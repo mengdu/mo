@@ -82,9 +82,6 @@ func (l Logger) Log(ctx context.Context, level Level, formatting bool, format st
 	for i, v := range kvs {
 		if fn, ok := v.Value().(Valuer); ok {
 			kvs[i][1] = fn(ctx)
-			if caller, ok := kvs[i][1].(ICaller); ok {
-				kvs[i][1] = caller.Caller(3)
-			}
 		}
 	}
 	l.out.Log(ctx, level, msg, kvs)

@@ -6,7 +6,6 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
-	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -32,33 +31,26 @@ func Value(key string, value interface{}) Field {
 type Valuer func(ctx context.Context) interface{}
 
 var (
-	cwd     string
-	cwdOnce sync.Once
+	cwd       string
+	cwdOnce   sync.Once
+	callerAbs = os.Getenv("MO_CALLER_ABS") == "1"
 )
 
-type ICaller interface {
-	Caller(skip int) string
-}
-
-// static check
-var _ ICaller = caller{}
-
-type caller struct{}
-
-func (caller) Caller(skip int) string {
-	_, file, line, _ := runtime.Caller(skip)
-	cwdOnce.Do(func() {
-		cwd, _ = os.Getwd()
-	})
-	if strings.Index(file, cwd) == 0 {
-		file, _ = filepath.Rel(cwd, file)
-	}
-	return file + ":" + strconv.Itoa(line)
-}
-
-func Caller() Valuer {
+func Caller(skip int) Valuer {
 	return func(ctx context.Context) interface{} {
-		return caller{}
+		_, file, line, _ := runtime.Caller(skip)
+		cwdOnce.Do(func() {
+			cwd, _ = os.Getwd()
+		})
+
+		if runtime.GOOS == "windows" {
+			file = filepath.Clean(file)
+		}
+
+		if !callerAbs && strings.Index(file, cwd) == 0 {
+			file, _ = filepath.Rel(cwd, file)
+		}
+		return fmt.Sprintf("%s:%d", file, line)
 	}
 }
 
