@@ -47,17 +47,16 @@ func main() {
 
 ## Benchmark
 
-```
-go test -cpu=4 -benchmem -benchtime=5s -bench "^Benchmark"
+```txt
 goos: darwin
 goarch: amd64
 pkg: github.com/mengdu/mo
-cpu: Intel(R) Core(TM) i7-8700B CPU @ 3.20GHz
-BenchmarkDefault-4                      39429948               138.1 ns/op            64 B/op          2 allocs/op
-BenchmarkDefaultWithCaller-4             8169790               660.9 ns/op           496 B/op         18 allocs/op
-BenchmarkJson-4                         17008795               339.4 ns/op           124 B/op          6 allocs/op
-BenchmarkJsonWithCaller-4                5119900              1157 ns/op             512 B/op         16 allocs/op
-BenchmarkJsonWithCallerFull-4            3169348              1869 ns/op             720 B/op         24 allocs/op
+cpu: Intel(R) Core(TM) i7-9750H CPU @ 2.60GHz
+BenchmarkDefault-4                      41029287               155.1 ns/op            64 B/op          2 allocs/op
+BenchmarkDefaultWithCaller-4             9756843               550.4 ns/op           496 B/op         11 allocs/op
+BenchmarkJson-4                         16316077               368.8 ns/op           128 B/op          6 allocs/op
+BenchmarkJsonWithCaller-4                4433232              1470 ns/op             536 B/op         14 allocs/op
+BenchmarkJsonWithCallerFull-4            2330289              2311 ns/op             816 B/op         21 allocs/op
 PASS
-ok      github.com/mengdu/mo    38.280s
+ok      github.com/mengdu/mo    39.824s
 ```
