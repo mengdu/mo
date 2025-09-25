@@ -4,10 +4,9 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"path/filepath"
 	"runtime"
+	"strconv"
 	"strings"
-	"sync"
 	"time"
 )
 
@@ -30,27 +29,20 @@ func Value(key string, value interface{}) Field {
 
 type Valuer func(ctx context.Context) interface{}
 
-var (
-	cwd       string
-	cwdOnce   sync.Once
-	callerAbs = os.Getenv("MO_CALLER_ABS") == "1"
-)
+var callerAbs, _ = strconv.ParseBool(os.Getenv("MO_CALLER_ABS"))
 
 func Caller(skip int) Valuer {
 	return func(ctx context.Context) interface{} {
 		_, file, line, _ := runtime.Caller(skip)
-		cwdOnce.Do(func() {
-			cwd, _ = os.Getwd()
-		})
-
-		if runtime.GOOS == "windows" {
-			file = filepath.Clean(file)
+		if callerAbs {
+			return file + ":" + strconv.Itoa(line)
 		}
-
-		if !callerAbs && strings.Index(file, cwd) == 0 {
-			file, _ = filepath.Rel(cwd, file)
+		idx := strings.LastIndexByte(file, '/')
+		if idx == -1 {
+			return file[idx+1:] + ":" + strconv.Itoa(line)
 		}
-		return fmt.Sprintf("%s:%d", file, line)
+		idx = strings.LastIndexByte(file[:idx], '/')
+		return file[idx+1:] + ":" + strconv.Itoa(line)
 	}
 }
 
