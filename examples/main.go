@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"time"
 
 	"github.com/mengdu/mo"
 )
@@ -36,7 +37,7 @@ func main() {
 
 	log := mo.New(context.Background(), mo.NewLogger(
 		mo.DefaultRecorder,
-		mo.Value("caller", mo.Caller(3)),
+		mo.Value("caller", mo.DefaultCaller),
 		mo.Value("ts", mo.Timestamp("15:04:05.000")),
 	))
 
@@ -57,4 +58,12 @@ func main() {
 	// log.Fatalw("fatalw message", mo.Value("k1", 123), mo.Value("k2", true), mo.Value("k3", []int{1, 2, 3}))
 
 	log.With(context.Background()).Infow("test with context", mo.Value("k1", 123), mo.Value("k2", true), mo.Value("k3", []int{1, 2, 3}))
+
+	l := mo.NewLogger(mo.DefaultRecorder,
+		mo.Value("caller", mo.Caller(2)),
+		mo.Value("ts", mo.Timestamp(time.RFC3339)),
+	)
+	ctx := context.Background()
+	l.Print(ctx, mo.LevelDebug, "debug message")
+	l.Print(ctx, mo.LevelInfo, "info message")
 }

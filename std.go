@@ -35,78 +35,78 @@ func SetBase(kv ...Field) {
 
 // Debug logs a message at the debug level.
 func Debug(a ...interface{}) {
-	std.Logger.Log(std.ctx, LevelDebug, false, "", a, nil)
+	std.Logger.Print(std.ctx, LevelDebug, a...)
 }
 
 // Info logs a message at the info level.
 func Info(a ...interface{}) {
-	std.Logger.Log(std.ctx, LevelInfo, false, "", a, nil)
+	std.Logger.Print(std.ctx, LevelInfo, a...)
 }
 
 // Warn logs a message at the warn level.
 func Warn(a ...interface{}) {
-	std.Logger.Log(std.ctx, LevelWarn, false, "", a, nil)
+	std.Logger.Print(std.ctx, LevelWarn, a...)
 }
 
 // Error logs a message at the error level.
 func Error(a ...interface{}) {
-	std.Logger.Log(std.ctx, LevelError, false, "", a, nil)
+	std.Logger.Print(std.ctx, LevelError, a...)
 }
 
 // Fatal logs a message at the fatal level and exits the program.
 func Fatal(a ...interface{}) {
-	std.Logger.Log(std.ctx, LevelFatal, false, "", a, nil)
+	std.Logger.Print(std.ctx, LevelFatal, a...)
 	os.Exit(1)
 }
 
 // Debugf logs a formatted message at the debug level.
 func Debugf(format string, a ...interface{}) {
-	std.Logger.Log(std.ctx, LevelDebug, true, format, a, nil)
+	std.Logger.Printf(std.ctx, LevelDebug, format, a...)
 }
 
 // Infof logs a formatted message at the info level.
 func Infof(format string, a ...interface{}) {
-	std.Logger.Log(std.ctx, LevelInfo, true, format, a, nil)
+	std.Logger.Printf(std.ctx, LevelInfo, format, a...)
 }
 
 // Warnf logs a formatted message at the warn level.
 func Warnf(format string, a ...interface{}) {
-	std.Logger.Log(std.ctx, LevelWarn, true, format, a, nil)
+	std.Logger.Printf(std.ctx, LevelWarn, format, a...)
 }
 
 // Errorf logs a formatted message at the error level.
 func Errorf(format string, a ...interface{}) {
-	std.Logger.Log(std.ctx, LevelError, true, format, a, nil)
+	std.Logger.Printf(std.ctx, LevelError, format, a...)
 }
 
 // Fatalf logs a formatted message at the fatal level and exits the program.
 func Fatalf(format string, a ...interface{}) {
-	std.Logger.Log(std.ctx, LevelFatal, true, format, a, nil)
+	std.Logger.Printf(std.ctx, LevelFatal, format, a...)
 	os.Exit(1)
 }
 
 // Debugw logs a message with key-value pairs at the debug level.
 func Debugw(msg string, kv ...Field) {
-	std.Logger.Log(std.ctx, LevelDebug, false, "", []interface{}{msg}, kv)
+	std.Logger.Printw(std.ctx, LevelDebug, msg, kv...)
 }
 
 // Infow logs a message with key-value pairs at the info level.
 func Infow(msg string, kv ...Field) {
-	std.Logger.Log(std.ctx, LevelInfo, false, "", []interface{}{msg}, kv)
+	std.Logger.Printw(std.ctx, LevelInfo, msg, kv...)
 }
 
 // Warnw logs a message with key-value pairs at the warn level.
 func Warnw(msg string, kv ...Field) {
-	std.Logger.Log(std.ctx, LevelWarn, false, "", []interface{}{msg}, kv)
+	std.Logger.Printw(std.ctx, LevelWarn, msg, kv...)
 }
 
 // Errorw logs a message with key-value pairs at the error level.
 func Errorw(msg string, kv ...Field) {
-	std.Logger.Log(std.ctx, LevelError, false, "", []interface{}{msg}, kv)
+	std.Logger.Printw(std.ctx, LevelError, msg, kv...)
 }
 
 // Fatalw logs a message with key-value pairs at the fatal level and exits the program.
 func Fatalw(msg string, kv ...Field) {
-	std.Logger.Log(std.ctx, LevelFatal, false, "", []interface{}{msg}, kv)
+	std.Logger.Printw(std.ctx, LevelFatal, msg, kv...)
 	os.Exit(1)
 }

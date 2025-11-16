@@ -46,6 +46,8 @@ func Caller(skip int) Valuer {
 	}
 }
 
+var DefaultCaller = Caller(3)
+
 func Timestamp(layout string) Valuer {
 	return func(context.Context) interface{} {
 		return time.Now().Format(layout)

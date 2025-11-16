@@ -59,6 +59,7 @@ func (l *Logger) SetSprintf(sprintf func(format string, a ...interface{}) string
 }
 
 // log is the internal method for logging messages at the specified level.
+// Deprecated: use Print, Printf or Printw instead.
 func (l Logger) Log(ctx context.Context, level Level, formatting bool, format string, args []interface{}, kv []Field) {
 	if !l.Enabled(level) {
 		return
@@ -84,5 +85,54 @@ func (l Logger) Log(ctx context.Context, level Level, formatting bool, format st
 			kvs[i][1] = fn(ctx)
 		}
 	}
+	l.out.Log(ctx, level, msg, kvs)
+}
+
+// Print logs a message at the specified level.
+func (l Logger) Print(ctx context.Context, level Level, a ...interface{}) {
+	if !l.Enabled(level) || l.out == nil {
+		return
+	}
+
+	kvs := append(make([]Field, 0, len(l.base)), l.base...)
+	for i, v := range kvs {
+		if fn, ok := v.Value().(Valuer); ok {
+			kvs[i][1] = fn(ctx)
+		}
+	}
+
+	l.out.Log(ctx, level, l.sprint(a...), kvs)
+}
+
+// Printf logs a formatted message at the specified level.
+func (l Logger) Printf(ctx context.Context, level Level, format string, a ...interface{}) {
+	if !l.Enabled(level) || l.out == nil {
+		return
+	}
+
+	kvs := append(make([]Field, 0, len(l.base)), l.base...)
+	for i, v := range kvs {
+		if fn, ok := v.Value().(Valuer); ok {
+			kvs[i][1] = fn(ctx)
+		}
+	}
+
+	l.out.Log(ctx, level, l.sprintf(format, a...), kvs)
+}
+
+// Printw logs a message with key-value pairs at the specified level.
+func (l Logger) Printw(ctx context.Context, level Level, msg string, kv ...Field) {
+	if !l.Enabled(level) || l.out == nil {
+		return
+	}
+
+	kvs := append(make([]Field, 0, len(l.base)+len(kv)), l.base...)
+	kvs = append(kvs, kv...)
+	for i, v := range kvs {
+		if fn, ok := v.Value().(Valuer); ok {
+			kvs[i][1] = fn(ctx)
+		}
+	}
+
 	l.out.Log(ctx, level, msg, kvs)
 }
