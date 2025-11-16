@@ -4,31 +4,41 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"io"
 	"strings"
 	"sync"
 	"sync/atomic"
 	"testing"
+	"time"
 )
 
-type blackholeStream struct {
+// discardWriter is a writer that discards all writes (similar to io.Discard but with counting)
+type discardWriter struct {
 	writeCount uint64
 }
 
-func (s *blackholeStream) WriteCount() uint64 {
-	return atomic.LoadUint64(&s.writeCount)
-}
-
-func (s *blackholeStream) Write(p []byte) (int, error) {
-	atomic.AddUint64(&s.writeCount, 1)
+func (w *discardWriter) Write(p []byte) (int, error) {
+	atomic.AddUint64(&w.writeCount, 1)
 	return len(p), nil
 }
 
-type JSONLogger struct {
+func (w *discardWriter) WriteCount() uint64 {
+	return atomic.LoadUint64(&w.writeCount)
+}
+
+// jsonRecorder is a Recorder implementation that outputs JSON
+type jsonRecorder struct {
 	encoder *json.Encoder
 	mu      sync.Mutex
 }
 
-func (l *JSONLogger) Log(ctx context.Context, level Level, msg string, kv []Field) {
+func newJSONRecorder(w io.Writer) *jsonRecorder {
+	return &jsonRecorder{
+		encoder: json.NewEncoder(w),
+	}
+}
+
+func (r *jsonRecorder) Log(ctx context.Context, level Level, msg string, kv []Field) {
 	line := map[string]interface{}{
 		"level": strings.ToLower(level.String()),
 		"msg":   msg,
@@ -38,116 +48,209 @@ func (l *JSONLogger) Log(ctx context.Context, level Level, msg string, kv []Fiel
 		line[v.Key()] = v.Value()
 	}
 
-	l.mu.Lock()
-	defer l.mu.Unlock()
-	l.encoder.Encode(kv)
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	r.encoder.Encode(line)
 }
 
-func BenchmarkDefault(b *testing.B) {
-	stream := &blackholeStream{}
-	std.Logger.SetRecorder(&stdRecorder{
-		stdout: stream,
-		stderr: stream,
+func setupBenchmarkHelper() *Helper {
+	discard := &discardWriter{}
+	recorder := &stdRecorder{
+		stdout: discard,
+		stderr: discard,
 		pool: &sync.Pool{
 			New: func() interface{} {
 				return new(bytes.Buffer)
 			},
 		},
-	})
-	b.ResetTimer()
-	b.RunParallel(func(pb *testing.PB) {
-		for pb.Next() {
-			Info("The quick brown fox jumps over the lazy dog")
-		}
-	})
-	if stream.WriteCount() != uint64(b.N) {
-		b.Fatalf("Log write count %d != %d", stream.WriteCount(), b.N)
 	}
+	logger := NewLogger(recorder)
+	return New(context.Background(), logger)
 }
 
-func BenchmarkDefaultWithCaller(b *testing.B) {
-	stream := &blackholeStream{}
-	std.Logger.SetRecorder(&stdRecorder{
-		stdout: stream,
-		stderr: stream,
-		pool: &sync.Pool{
-			New: func() interface{} {
-				return new(bytes.Buffer)
-			},
-		},
-	})
-	SetBase(
-		Value("ts", Timestamp("2006-01-02 15:04:05.000")),
-		Value("caller", Caller(3)),
-	)
-	b.ResetTimer()
-	b.RunParallel(func(pb *testing.PB) {
-		for pb.Next() {
-			Info("The quick brown fox jumps over the lazy dog")
-		}
-	})
-	if stream.WriteCount() != uint64(b.N) {
-		b.Fatalf("Log write count %d != %d", stream.WriteCount(), b.N)
-	}
+type key string
+
+const mykey = key("req-id")
+
+var fields = []Field{
+	Value("k1", 123),
+	Value("k2", true),
+	Value("k3", []interface{}{1, true, "false", map[string]interface{}{"a": 1}}),
+	Value("k4", Valuer(func(ctx context.Context) interface{} {
+		v, _ := ctx.Value(mykey).(string)
+		return v
+	})),
 }
 
-func BenchmarkJson(b *testing.B) {
-	stream := &blackholeStream{}
-	out := &JSONLogger{
-		encoder: json.NewEncoder(stream),
-	}
-	log := New(context.Background(), NewLogger(out))
+// Benchmark tests for Helper methods
+
+func Benchmark_Info(b *testing.B) {
+	log := setupBenchmarkHelper()
 	b.ResetTimer()
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
-			log.Info("The quick brown fox jumps over the lazy dog")
+			log.Info("test message")
 		}
 	})
-	if stream.WriteCount() != uint64(b.N) {
-		b.Fatalf("Log write count %d != %d", stream.WriteCount(), b.N)
-	}
 }
 
-func BenchmarkJsonWithCaller(b *testing.B) {
-	stream := &blackholeStream{}
-	out := &JSONLogger{
-		encoder: json.NewEncoder(stream),
-	}
-	log := New(context.Background(),
-		NewLogger(out,
-			Value("ts", Timestamp("2006-01-02 15:04:05.000")),
-			Value("caller", Caller(3)),
-		),
-	)
+func Benchmark_Infof(b *testing.B) {
+	log := setupBenchmarkHelper()
 	b.ResetTimer()
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
-			log.Info("The quick brown fox jumps over the lazy dog")
+			log.Infof("test message %s", "test")
 		}
 	})
-	if stream.WriteCount() != uint64(b.N) {
-		b.Fatalf("Log write count %d != %d", stream.WriteCount(), b.N)
-	}
 }
 
-func BenchmarkJsonWithCallerFull(b *testing.B) {
-	stream := &blackholeStream{}
-	out := &JSONLogger{
-		encoder: json.NewEncoder(stream),
-	}
-	log := New(context.Background(),
-		NewLogger(out,
-			Value("ts", Timestamp("2006-01-02 15:04:05.000")),
-			Value("caller", Caller(3)),
-		),
-	)
+func Benchmark_Infow(b *testing.B) {
+	log := setupBenchmarkHelper()
 	b.ResetTimer()
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
-			log.With(context.Background()).Infow("The quick brown fox jumps over the lazy dog", Value("k1", "bar"), Value("k2", 123), Value("k3", 4.56), Value("k4", []int{1, 2, 3, 4, 5}))
+			log.Infow("test message", fields...)
 		}
 	})
-	if stream.WriteCount() != uint64(b.N) {
-		b.Fatalf("Log write count %d != %d", stream.WriteCount(), b.N)
-	}
+}
+
+func Benchmark_Infox(b *testing.B) {
+	log := setupBenchmarkHelper()
+	ctx := context.Background()
+	ctx = context.WithValue(ctx, mykey, "123")
+	b.ResetTimer()
+	b.RunParallel(func(pb *testing.PB) {
+		for pb.Next() {
+			log.Infox(ctx, "test message")
+		}
+	})
+}
+
+func Benchmark_Infofx(b *testing.B) {
+	log := setupBenchmarkHelper()
+	ctx := context.Background()
+	ctx = context.WithValue(ctx, mykey, "123")
+	b.ResetTimer()
+	b.RunParallel(func(pb *testing.PB) {
+		for pb.Next() {
+			log.Infofx(ctx, "test message %s", "test")
+		}
+	})
+}
+
+func Benchmark_Infowx(b *testing.B) {
+	log := setupBenchmarkHelper()
+	ctx := context.Background()
+	ctx = context.WithValue(ctx, mykey, "123")
+	b.ResetTimer()
+	b.RunParallel(func(pb *testing.PB) {
+		for pb.Next() {
+			log.Infowx(ctx, "test message", fields...)
+		}
+	})
+}
+
+func Benchmark_WithCaller_Info(b *testing.B) {
+	log := setupBenchmarkHelper()
+	log.Logger.SetBase(Value("caller", DefaultCaller), Value("ts", Timestamp(time.RFC3339)))
+	b.ResetTimer()
+	b.RunParallel(func(pb *testing.PB) {
+		for pb.Next() {
+			log.Info("test message")
+		}
+	})
+}
+
+func Benchmark_WithCaller_Infof(b *testing.B) {
+	log := setupBenchmarkHelper()
+	log.Logger.SetBase(Value("caller", DefaultCaller), Value("ts", Timestamp(time.RFC3339)))
+	b.ResetTimer()
+	b.RunParallel(func(pb *testing.PB) {
+		for pb.Next() {
+			log.Infof("test message %s", "test")
+		}
+	})
+}
+
+func Benchmark_WithCaller_Infow(b *testing.B) {
+	log := setupBenchmarkHelper()
+	log.Logger.SetBase(Value("caller", DefaultCaller), Value("ts", Timestamp(time.RFC3339)))
+	b.ResetTimer()
+	b.RunParallel(func(pb *testing.PB) {
+		for pb.Next() {
+			log.Infow("test message", fields...)
+		}
+	})
+}
+
+func Benchmark_WithCaller_Infox(b *testing.B) {
+	log := setupBenchmarkHelper()
+	log.Logger.SetBase(Value("caller", DefaultCaller), Value("ts", Timestamp(time.RFC3339)))
+	ctx := context.Background()
+	ctx = context.WithValue(ctx, mykey, "123")
+	b.ResetTimer()
+	b.RunParallel(func(pb *testing.PB) {
+		for pb.Next() {
+			log.Infox(ctx, "test message")
+		}
+	})
+}
+
+func Benchmark_WithCaller_Infofx(b *testing.B) {
+	log := setupBenchmarkHelper()
+	log.Logger.SetBase(Value("caller", DefaultCaller), Value("ts", Timestamp(time.RFC3339)))
+	ctx := context.Background()
+	ctx = context.WithValue(ctx, mykey, "123")
+	b.ResetTimer()
+	b.RunParallel(func(pb *testing.PB) {
+		for pb.Next() {
+			log.Infofx(ctx, "test message %s", "test")
+		}
+	})
+}
+
+func Benchmark_WithCaller_Infowx(b *testing.B) {
+	log := setupBenchmarkHelper()
+	log.Logger.SetBase(Value("caller", DefaultCaller), Value("ts", Timestamp(time.RFC3339)))
+	ctx := context.Background()
+	ctx = context.WithValue(ctx, mykey, "123")
+	b.ResetTimer()
+	b.RunParallel(func(pb *testing.PB) {
+		for pb.Next() {
+			log.Infowx(ctx, "test message", fields...)
+		}
+	})
+}
+
+func Benchmark_With(b *testing.B) {
+	log := setupBenchmarkHelper()
+	log.Logger.SetBase(Value("caller", DefaultCaller), Value("ts", Timestamp(time.RFC3339)))
+	ctx := context.Background()
+	ctx = context.WithValue(ctx, mykey, "123")
+	b.ResetTimer()
+	b.RunParallel(func(pb *testing.PB) {
+		for pb.Next() {
+			log.With(ctx).Info("test message")
+		}
+	})
+}
+
+func Benchmark_JSON(b *testing.B) {
+	log := setupBenchmarkHelper()
+	log.Logger.SetBase(Value("caller", DefaultCaller), Value("ts", Timestamp(time.RFC3339)))
+	discard := &discardWriter{}
+	log.Logger.SetRecorder(newJSONRecorder(discard))
+	ctx := context.Background()
+	ctx = context.WithValue(ctx, mykey, "123")
+	b.ResetTimer()
+	b.RunParallel(func(pb *testing.PB) {
+		for pb.Next() {
+			// log.Info("test message")
+			// log.Infof("test message %s", "test")
+			// log.Infow("test message", fields...)
+			// log.Infox(ctx, "test message")
+			// log.Infofx(ctx, "test message %s", "test")
+			log.Infowx(ctx, "test message", fields...)
+		}
+	})
 }

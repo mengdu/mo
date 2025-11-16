@@ -168,18 +168,23 @@ func main() {
 			},
 		},
 	}
-	id, _ := os.Hostname()
+	// id, _ := os.Hostname()
 	log := mo.NewLogger(logger,
 		mo.Value("ts", mo.Timestamp("2006-01-02 15:04:05.000")),
 		mo.Value("caller", mo.Caller(3)),
-		mo.Value("service.id", id),
-		mo.Value("service.version", "v1.2.3"),
+		// mo.Value("service.id", id),
+		// mo.Value("service.version", "v1.2.3"),
 		mo.Value("trace.id", TraceID()),
-		mo.Value("span.id", SpanID()),
+		// mo.Value("span.id", SpanID()),
 	)
 	l := mo.New(ctx, log)
 	// l.Logger.SetLevel(mo.LevelError)
 	// l.Logger.SetLevel(mo.LevelInfo)
+	fields := []mo.Field{
+		mo.Value("k1", 123),
+		mo.Value("k2", true),
+		mo.Value("k3", []interface{}{1, true, "test"}),
+	}
 
 	l.Debug("debug message")
 	l.Info("info message")
@@ -193,11 +198,11 @@ func main() {
 	l.Errorf("errorf message %s", "test")
 	// l.Fatalf("fatalf message %s", "test")
 
-	l.Debugw("debugw message", mo.Value("k1", 123), mo.Value("k2", true), mo.Value("k3", []int{1, 2, 3}))
-	l.Infow("infow message", mo.Value("k1", 123), mo.Value("k2", true), mo.Value("k3", []int{1, 2, 3}))
-	l.Warnw("warnw message", mo.Value("k1", 123), mo.Value("k2", true), mo.Value("k3", []int{1, 2, 3}))
-	l.Errorw("errorw message", mo.Value("k1", 123), mo.Value("k2", true), mo.Value("k3", []int{1, 2, 3}))
-	// l.Fatalw("fatalw message", mo.Value("k1", 123), mo.Value("k2", true), mo.Value("k3", []int{1, 2, 3}))
+	l.Debugw("debugw message", fields...)
+	l.Infow("infow message", fields...)
+	l.Warnw("warnw message", fields...)
+	l.Errorw("errorw message", fields...)
+	// l.Fatalw("fatalw message", fields...)
 
 	l.Infow("replace ts, caller", mo.Value("ts", "xxx"), mo.Value("caller", "path-to-xxx.go:123"))
 	l.With(context.Background()).Infow("test with context", mo.Value("k1", 123))
