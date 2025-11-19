@@ -50,17 +50,17 @@ func Debugw(msg string, kv ...Field) {
 
 // Debugx logs a message at the debug level with the given context.
 func Debugx(ctx context.Context, a ...interface{}) {
-	std.Debugx(ctx, a...)
+	std.Logger.Print(ctx, LevelDebug, a...)
 }
 
 // Debugfx logs a formatted message at the debug level with the given context.
 func Debugfx(ctx context.Context, format string, a ...interface{}) {
-	std.Debugfx(ctx, format, a...)
+	std.Logger.Printf(ctx, LevelDebug, format, a...)
 }
 
 // Debugwx logs a message with key-value pairs at the debug level with the given context.
 func Debugwx(ctx context.Context, msg string, kv ...Field) {
-	std.Debugwx(ctx, msg, kv...)
+	std.Logger.Printw(ctx, LevelDebug, msg, kv...)
 }
 
 // Info logs a message at the info level.
@@ -80,17 +80,17 @@ func Infow(msg string, kv ...Field) {
 
 // Infox logs a message at the info level with the given context.
 func Infox(ctx context.Context, a ...interface{}) {
-	std.Infox(ctx, a...)
+	std.Logger.Print(ctx, LevelInfo, a...)
 }
 
 // Infofx logs a formatted message at the info level with the given context.
 func Infofx(ctx context.Context, format string, a ...interface{}) {
-	std.Infofx(ctx, format, a...)
+	std.Logger.Printf(ctx, LevelInfo, format, a...)
 }
 
 // Infowx logs a message with key-value pairs at the info level with the given context.
 func Infowx(ctx context.Context, msg string, kv ...Field) {
-	std.Infowx(ctx, msg, kv...)
+	std.Logger.Printw(ctx, LevelInfo, msg, kv...)
 }
 
 // Warn logs a message at the warn level.
@@ -110,17 +110,17 @@ func Warnw(msg string, kv ...Field) {
 
 // Warnx logs a message at the warn level with the given context.
 func Warnx(ctx context.Context, a ...interface{}) {
-	std.Warnx(ctx, a...)
+	std.Logger.Print(ctx, LevelWarn, a...)
 }
 
 // Warnfx logs a formatted message at the warn level with the given context.
 func Warnfx(ctx context.Context, format string, a ...interface{}) {
-	std.Warnfx(ctx, format, a...)
+	std.Logger.Printf(ctx, LevelWarn, format, a...)
 }
 
 // Warnwx logs a message with key-value pairs at the warn level with the given context.
 func Warnwx(ctx context.Context, msg string, kv ...Field) {
-	std.Warnwx(ctx, msg, kv...)
+	std.Logger.Printw(ctx, LevelWarn, msg, kv...)
 }
 
 // Error logs a message at the error level.
@@ -140,17 +140,17 @@ func Errorw(msg string, kv ...Field) {
 
 // Errorx logs a message at the error level with the given context.
 func Errorx(ctx context.Context, a ...interface{}) {
-	std.Errorx(ctx, a...)
+	std.Logger.Print(ctx, LevelError, a...)
 }
 
 // Errorfx logs a formatted message at the error level with the given context.
 func Errorfx(ctx context.Context, format string, a ...interface{}) {
-	std.Errorfx(ctx, format, a...)
+	std.Logger.Printf(ctx, LevelError, format, a...)
 }
 
 // Errorwx logs a message with key-value pairs at the error level with the given context.
 func Errorwx(ctx context.Context, msg string, kv ...Field) {
-	std.Errorwx(ctx, msg, kv...)
+	std.Logger.Printw(ctx, LevelError, msg, kv...)
 }
 
 // Fatal logs a message at the fatal level and exits the program.
@@ -173,15 +173,18 @@ func Fatalw(msg string, kv ...Field) {
 
 // Fatalx logs a message at the fatal level with the given context and exits the program.
 func Fatalx(ctx context.Context, a ...interface{}) {
-	std.Fatalx(ctx, a...)
+	std.Logger.Print(ctx, LevelFatal, a...)
+	os.Exit(1)
 }
 
 // Fatalfx logs a formatted message at the fatal level with the given context and exits the program.
 func Fatalfx(ctx context.Context, format string, a ...interface{}) {
-	std.Fatalfx(ctx, format, a...)
+	std.Logger.Printf(ctx, LevelFatal, format, a...)
+	os.Exit(1)
 }
 
 // Fatalwx logs a message with key-value pairs at the fatal level with the given context and exits the program.
 func Fatalwx(ctx context.Context, msg string, kv ...Field) {
-	std.Fatalwx(ctx, msg, kv...)
+	std.Logger.Printw(ctx, LevelFatal, msg, kv...)
+	os.Exit(1)
 }

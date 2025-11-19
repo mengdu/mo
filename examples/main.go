@@ -19,8 +19,8 @@ var TraceId = mo.Valuer(func(ctx context.Context) interface{} {
 
 func main() {
 	mo.SetBase(
-		// mo.Value("ts", mo.Timestamp("15:04:05.000")),
-		// mo.Value("caller", mo.Caller(3)),
+		mo.Value("ts", mo.Timestamp("15:04:05.000")),
+		mo.Value("caller", mo.Caller(3)),
 		mo.Value("trace.id", TraceId),
 	)
 
