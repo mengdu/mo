@@ -50,10 +50,12 @@ func (r *jsonRecorder) Log(ctx context.Context, level Level, msg string, kv []Fi
 
 	r.mu.Lock()
 	defer r.mu.Unlock()
-	r.encoder.Encode(line)
+	if err := r.encoder.Encode(line); err != nil {
+		panic(err)
+	}
 }
 
-func setupBenchmarkHelper() *Helper {
+func setupBenchmarkHelper() (*Helper, *discardWriter) {
 	discard := &discardWriter{}
 	recorder := &stdRecorder{
 		stdout: discard,
@@ -65,7 +67,7 @@ func setupBenchmarkHelper() *Helper {
 		},
 	}
 	logger := NewLogger(recorder)
-	return New(context.Background(), logger)
+	return New(context.Background(), logger), discard
 }
 
 type key string
@@ -85,37 +87,46 @@ var fields = []Field{
 // Benchmark tests for Helper methods
 
 func Benchmark_Info(b *testing.B) {
-	log := setupBenchmarkHelper()
+	log, discard := setupBenchmarkHelper()
 	b.ResetTimer()
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
 			log.Info("test message")
 		}
 	})
+	if discard.WriteCount() != uint64(b.N) {
+		b.Errorf("expected %d writes, got %d", b.N, discard.WriteCount())
+	}
 }
 
 func Benchmark_Infof(b *testing.B) {
-	log := setupBenchmarkHelper()
+	log, discard := setupBenchmarkHelper()
 	b.ResetTimer()
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
 			log.Infof("test message %s", "test")
 		}
 	})
+	if discard.WriteCount() != uint64(b.N) {
+		b.Errorf("expected %d writes, got %d", b.N, discard.WriteCount())
+	}
 }
 
 func Benchmark_Infow(b *testing.B) {
-	log := setupBenchmarkHelper()
+	log, discard := setupBenchmarkHelper()
 	b.ResetTimer()
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
 			log.Infow("test message", fields...)
 		}
 	})
+	if discard.WriteCount() != uint64(b.N) {
+		b.Errorf("expected %d writes, got %d", b.N, discard.WriteCount())
+	}
 }
 
 func Benchmark_Infox(b *testing.B) {
-	log := setupBenchmarkHelper()
+	log, discard := setupBenchmarkHelper()
 	ctx := context.Background()
 	ctx = context.WithValue(ctx, mykey, "123")
 	b.ResetTimer()
@@ -124,10 +135,13 @@ func Benchmark_Infox(b *testing.B) {
 			log.Infox(ctx, "test message")
 		}
 	})
+	if discard.WriteCount() != uint64(b.N) {
+		b.Errorf("expected %d writes, got %d", b.N, discard.WriteCount())
+	}
 }
 
 func Benchmark_Infofx(b *testing.B) {
-	log := setupBenchmarkHelper()
+	log, discard := setupBenchmarkHelper()
 	ctx := context.Background()
 	ctx = context.WithValue(ctx, mykey, "123")
 	b.ResetTimer()
@@ -136,10 +150,13 @@ func Benchmark_Infofx(b *testing.B) {
 			log.Infofx(ctx, "test message %s", "test")
 		}
 	})
+	if discard.WriteCount() != uint64(b.N) {
+		b.Errorf("expected %d writes, got %d", b.N, discard.WriteCount())
+	}
 }
 
 func Benchmark_Infowx(b *testing.B) {
-	log := setupBenchmarkHelper()
+	log, discard := setupBenchmarkHelper()
 	ctx := context.Background()
 	ctx = context.WithValue(ctx, mykey, "123")
 	b.ResetTimer()
@@ -148,10 +165,13 @@ func Benchmark_Infowx(b *testing.B) {
 			log.Infowx(ctx, "test message", fields...)
 		}
 	})
+	if discard.WriteCount() != uint64(b.N) {
+		b.Errorf("expected %d writes, got %d", b.N, discard.WriteCount())
+	}
 }
 
 func Benchmark_WithCaller_Info(b *testing.B) {
-	log := setupBenchmarkHelper()
+	log, discard := setupBenchmarkHelper()
 	log.Logger.SetBase(Value("caller", DefaultCaller), Value("ts", Timestamp(time.RFC3339)))
 	b.ResetTimer()
 	b.RunParallel(func(pb *testing.PB) {
@@ -159,10 +179,13 @@ func Benchmark_WithCaller_Info(b *testing.B) {
 			log.Info("test message")
 		}
 	})
+	if discard.WriteCount() != uint64(b.N) {
+		b.Errorf("expected %d writes, got %d", b.N, discard.WriteCount())
+	}
 }
 
 func Benchmark_WithCaller_Infof(b *testing.B) {
-	log := setupBenchmarkHelper()
+	log, discard := setupBenchmarkHelper()
 	log.Logger.SetBase(Value("caller", DefaultCaller), Value("ts", Timestamp(time.RFC3339)))
 	b.ResetTimer()
 	b.RunParallel(func(pb *testing.PB) {
@@ -170,10 +193,13 @@ func Benchmark_WithCaller_Infof(b *testing.B) {
 			log.Infof("test message %s", "test")
 		}
 	})
+	if discard.WriteCount() != uint64(b.N) {
+		b.Errorf("expected %d writes, got %d", b.N, discard.WriteCount())
+	}
 }
 
 func Benchmark_WithCaller_Infow(b *testing.B) {
-	log := setupBenchmarkHelper()
+	log, discard := setupBenchmarkHelper()
 	log.Logger.SetBase(Value("caller", DefaultCaller), Value("ts", Timestamp(time.RFC3339)))
 	b.ResetTimer()
 	b.RunParallel(func(pb *testing.PB) {
@@ -181,10 +207,13 @@ func Benchmark_WithCaller_Infow(b *testing.B) {
 			log.Infow("test message", fields...)
 		}
 	})
+	if discard.WriteCount() != uint64(b.N) {
+		b.Errorf("expected %d writes, got %d", b.N, discard.WriteCount())
+	}
 }
 
 func Benchmark_WithCaller_Infox(b *testing.B) {
-	log := setupBenchmarkHelper()
+	log, discard := setupBenchmarkHelper()
 	log.Logger.SetBase(Value("caller", DefaultCaller), Value("ts", Timestamp(time.RFC3339)))
 	ctx := context.Background()
 	ctx = context.WithValue(ctx, mykey, "123")
@@ -194,10 +223,13 @@ func Benchmark_WithCaller_Infox(b *testing.B) {
 			log.Infox(ctx, "test message")
 		}
 	})
+	if discard.WriteCount() != uint64(b.N) {
+		b.Errorf("expected %d writes, got %d", b.N, discard.WriteCount())
+	}
 }
 
 func Benchmark_WithCaller_Infofx(b *testing.B) {
-	log := setupBenchmarkHelper()
+	log, discard := setupBenchmarkHelper()
 	log.Logger.SetBase(Value("caller", DefaultCaller), Value("ts", Timestamp(time.RFC3339)))
 	ctx := context.Background()
 	ctx = context.WithValue(ctx, mykey, "123")
@@ -207,10 +239,13 @@ func Benchmark_WithCaller_Infofx(b *testing.B) {
 			log.Infofx(ctx, "test message %s", "test")
 		}
 	})
+	if discard.WriteCount() != uint64(b.N) {
+		b.Errorf("expected %d writes, got %d", b.N, discard.WriteCount())
+	}
 }
 
 func Benchmark_WithCaller_Infowx(b *testing.B) {
-	log := setupBenchmarkHelper()
+	log, discard := setupBenchmarkHelper()
 	log.Logger.SetBase(Value("caller", DefaultCaller), Value("ts", Timestamp(time.RFC3339)))
 	ctx := context.Background()
 	ctx = context.WithValue(ctx, mykey, "123")
@@ -220,10 +255,13 @@ func Benchmark_WithCaller_Infowx(b *testing.B) {
 			log.Infowx(ctx, "test message", fields...)
 		}
 	})
+	if discard.WriteCount() != uint64(b.N) {
+		b.Errorf("expected %d writes, got %d", b.N, discard.WriteCount())
+	}
 }
 
 func Benchmark_With(b *testing.B) {
-	log := setupBenchmarkHelper()
+	log, discard := setupBenchmarkHelper()
 	log.Logger.SetBase(Value("caller", DefaultCaller), Value("ts", Timestamp(time.RFC3339)))
 	ctx := context.Background()
 	ctx = context.WithValue(ctx, mykey, "123")
@@ -233,13 +271,17 @@ func Benchmark_With(b *testing.B) {
 			log.With(ctx).Info("test message")
 		}
 	})
+	if discard.WriteCount() != uint64(b.N) {
+		b.Errorf("expected %d writes, got %d", b.N, discard.WriteCount())
+	}
 }
 
 func Benchmark_JSON(b *testing.B) {
-	log := setupBenchmarkHelper()
+	log, _ := setupBenchmarkHelper()
 	log.Logger.SetBase(Value("caller", DefaultCaller), Value("ts", Timestamp(time.RFC3339)))
 	discard := &discardWriter{}
-	log.Logger.SetRecorder(newJSONRecorder(discard))
+	record := newJSONRecorder(discard)
+	log.Logger.SetRecorder(record)
 	ctx := context.Background()
 	ctx = context.WithValue(ctx, mykey, "123")
 	b.ResetTimer()
@@ -253,4 +295,7 @@ func Benchmark_JSON(b *testing.B) {
 			log.Infowx(ctx, "test message", fields...)
 		}
 	})
+	if discard.WriteCount() != uint64(b.N) {
+		b.Errorf("expected %d writes, got %d", b.N, discard.WriteCount())
+	}
 }

@@ -48,15 +48,25 @@ func main() {
 ## Benchmark
 
 ```txt
+go test -benchmem -bench "^Benchmark" -benchtime=5s
 goos: darwin
 goarch: amd64
 pkg: github.com/mengdu/mo
 cpu: Intel(R) Core(TM) i7-9750H CPU @ 2.60GHz
-BenchmarkDefault-4                      41029287               155.1 ns/op            64 B/op          2 allocs/op
-BenchmarkDefaultWithCaller-4             9756843               550.4 ns/op           496 B/op         11 allocs/op
-BenchmarkJson-4                         16316077               368.8 ns/op           128 B/op          6 allocs/op
-BenchmarkJsonWithCaller-4                4433232              1470 ns/op             536 B/op         14 allocs/op
-BenchmarkJsonWithCallerFull-4            2330289              2311 ns/op             816 B/op         21 allocs/op
+Benchmark_Info-12                       30961867               186.8 ns/op            16 B/op          1 allocs/op
+Benchmark_Infof-12                      25124493               202.2 ns/op            24 B/op          1 allocs/op
+Benchmark_Infow-12                      16628475               423.4 ns/op           272 B/op          8 allocs/op
+Benchmark_Infox-12                      27565543               205.0 ns/op            16 B/op          1 allocs/op
+Benchmark_Infofx-12                     28369299               219.1 ns/op            24 B/op          1 allocs/op
+Benchmark_Infowx-12                     14071964               462.8 ns/op           288 B/op          9 allocs/op
+Benchmark_WithCaller_Info-12            13652521               438.9 ns/op           457 B/op         10 allocs/op
+Benchmark_WithCaller_Infof-12           12920677               479.2 ns/op           465 B/op         10 allocs/op
+Benchmark_WithCaller_Infow-12            6882974               898.2 ns/op           714 B/op         16 allocs/op
+Benchmark_WithCaller_Infox-12           11326057               515.0 ns/op           457 B/op         10 allocs/op
+Benchmark_WithCaller_Infofx-12          10696102               499.6 ns/op           465 B/op         10 allocs/op
+Benchmark_WithCaller_Infowx-12           6628028              1002 ns/op             730 B/op         17 allocs/op
+Benchmark_With-12                       10844205               519.7 ns/op           457 B/op         10 allocs/op
+Benchmark_JSON-12                        1522146              3488 ns/op            1585 B/op         34 allocs/op
 PASS
-ok      github.com/mengdu/mo    39.824s
+ok      github.com/mengdu/mo    98.779s
 ```
