@@ -15,6 +15,20 @@ type Recorder interface {
 	Log(ctx context.Context, level Level, msg string, kv []Field)
 }
 
+type combine struct {
+	Recorders []Recorder
+}
+
+func (c combine) Log(ctx context.Context, level Level, msg string, kv []Field) {
+	for _, v := range c.Recorders {
+		v.Log(ctx, level, msg, kv)
+	}
+}
+
+func Combine(a ...Recorder) Recorder {
+	return combine{Recorders: a}
+}
+
 // Ensure stdRecorder implements the Recorder interface.
 var _ Recorder = (*stdRecorder)(nil)
 
