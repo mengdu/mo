@@ -15,9 +15,15 @@ import (
 )
 
 func main() {
+	mo.SetRecorder(&record.Console{
+		Stdout:           os.Stdout,
+		Stderr:           os.Stderr,
+		LevelType:        "abbr",
+		FilterEmptyField: true,
+	})
 	mo.SetBase(
 		mo.Value("ts", mo.Timestamp("15:04:05.000")),
-		mo.Value("caller", mo.Caller(4)),
+		mo.Value("caller", mo.Caller(3)),
 		mo.Value("tag", "dev"),
 	)
 
@@ -44,6 +50,10 @@ func main() {
 - [Example](examples/main.go)
 - [Rotate Example](examples/rotate/main.go)
 - [Opentelemetry Example](examples/otel/main.go)
+
+## Level
+
+`Debug`, `Info`, `Warn`, `Error`, `Fatal`.
 
 ## Benchmark
 

@@ -12,15 +12,26 @@ import (
 	"github.com/mengdu/mo"
 )
 
-type ConsoleRecorder struct {
+// Key constants for structured logging
+const (
+	KeyTimestamp = "ts"
+	KeyCaller    = "caller"
+	KeyMessage   = "msg"
+	KeyLevel     = "level"
+)
+
+// Console is a simple console logger.
+type Console struct {
 	FilterEmptyField bool
 	Stdout           io.Writer
 	Stderr           io.Writer
+	LevelType        string // "string", "abbr", "char"
 	mu               sync.Mutex
 	pool             *sync.Pool
 }
 
-func (c *ConsoleRecorder) Log(ctx context.Context, level mo.Level, msg string, kv []mo.Field) {
+// Log implements the Recorder interface.
+func (c *Console) Log(ctx context.Context, level mo.Level, msg string, kv []mo.Field) {
 	if c.pool == nil {
 		c.pool = &sync.Pool{
 			New: func() interface{} {
@@ -34,10 +45,10 @@ func (c *ConsoleRecorder) Log(ctx context.Context, level mo.Level, msg string, k
 	caller := ""
 	ts := ""
 	for _, v := range kv {
-		if v.Key() == "ts" {
+		if v.Key() == KeyTimestamp {
 			ts = color.Dim().String(fmt.Sprintf("%v", v.Value()))
 		}
-		if v.Key() == "caller" {
+		if v.Key() == KeyCaller {
 			caller = v.Value().(string)
 		}
 	}
@@ -48,31 +59,39 @@ func (c *ConsoleRecorder) Log(ctx context.Context, level mo.Level, msg string, k
 		buf.WriteString("]")
 	}
 
-	levelStr := fmt.Sprintf("[%s]", level.Abbr())
+	tag := ""
+	if c.LevelType == "abbr" {
+		tag = level.Abbr()
+	} else if c.LevelType == "char" {
+		tag = level.Char()
+	} else {
+		tag = level.String()
+	}
+	tag = fmt.Sprintf("[%s]", tag)
 	switch level {
 	case mo.LevelDebug:
-		levelStr = color.BgGray().White().String(levelStr)
+		tag = color.BgGray().White().String(tag)
 		msg = color.Gray().String(msg)
 	case mo.LevelInfo:
-		levelStr = color.BgBlue().White().String(levelStr)
+		tag = color.BgBlue().White().String(tag)
 	case mo.LevelWarn:
-		levelStr = color.BgYellow().White().String(levelStr)
+		tag = color.BgYellow().White().String(tag)
 		msg = color.Yellow().String(msg)
 	case mo.LevelError:
-		levelStr = color.BgRed().White().String(levelStr)
+		tag = color.BgRed().White().String(tag)
 		msg = color.Red().String(msg)
 	case mo.LevelFatal:
-		levelStr = color.BgRed().White().String(levelStr)
+		tag = color.BgRed().White().String(tag)
 		msg = color.Red().String(msg)
 	}
 
-	buf.WriteString(levelStr)
+	buf.WriteString(tag)
 	buf.WriteString(" ")
 	buf.WriteString(msg)
 
 	i := 0
 	for _, v := range kv {
-		if v.Key() == "ts" || v.Key() == "caller" {
+		if v.Key() == KeyTimestamp || v.Key() == KeyCaller {
 			continue
 		}
 

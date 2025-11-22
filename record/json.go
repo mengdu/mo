@@ -10,14 +10,16 @@ import (
 	"github.com/mengdu/mo"
 )
 
-type JSONRecorder struct {
+// Key constants for structured logging
+type JSON struct {
 	Encoder *json.Encoder
 }
 
-func (l *JSONRecorder) Log(ctx context.Context, level mo.Level, msg string, kv []mo.Field) {
+// Log implements the Recorder interface.
+func (l *JSON) Log(ctx context.Context, level mo.Level, msg string, kv []mo.Field) {
 	line := make(map[string]interface{}, len(kv)+2)
-	line["level"] = strings.ToLower(level.String())
-	line["msg"] = msg
+	line[KeyLevel] = strings.ToLower(level.String())
+	line[KeyMessage] = msg
 
 	for _, v := range kv {
 		line[v.Key()] = v.Value()

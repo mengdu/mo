@@ -7,13 +7,17 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/mengdu/color"
 	"github.com/mengdu/fmtx"
 	"github.com/mengdu/mo"
+	"github.com/mengdu/mo/record"
 	"go.opentelemetry.io/otel/trace"
+	"gopkg.in/natefinch/lumberjack.v2"
 )
 
 type JSONLogger struct {
@@ -144,6 +148,57 @@ func (s *mockSpan) SpanContext() trace.SpanContext {
 	return s.sc
 }
 
+type LoggerOpts struct {
+	Filename   string `mapstructure:"filename"`           // log file path
+	Level      string `mapstructure:"level"`              // debug, info, warn, error, fatal
+	Timestamp  string `mapstructure:"timestamp"`          // time.TimeOnly, time.RFC3339, time.Unix
+	MaxSize    int    `mapstructure:"rolling.maxsize"`    // MB
+	MaxBackups int    `mapstructure:"rolling.maxbackups"` // number of backups
+	MaxAge     int    `mapstructure:"rolling.maxage"`     // days
+	Compress   bool   `mapstructure:"rolling.compress"`   // disabled by default
+}
+
+func Init(ctx context.Context, opts *LoggerOpts) *mo.Helper {
+	if err := os.MkdirAll(filepath.Dir(opts.Filename), 0755); err != nil {
+		panic(err)
+	}
+	out := &lumberjack.Logger{
+		Filename:   opts.Filename,
+		MaxSize:    opts.MaxSize,    // 最大文件大小 1MB
+		MaxBackups: opts.MaxBackups, // 备份数
+		MaxAge:     opts.MaxAge,     // days
+		Compress:   opts.Compress,   // 是否压缩
+		LocalTime:  true,
+	}
+
+	consoleRecorder := &record.Console{
+		FilterEmptyField: true,
+		Stdout:           os.Stdout,
+		Stderr:           os.Stderr,
+		LevelType:        "char",
+	}
+
+	jsonRecorder := &record.JSON{
+		Encoder: json.NewEncoder(out),
+	}
+
+	recorder := mo.Combine(consoleRecorder, jsonRecorder)
+	// id, _ := os.Hostname()
+	base := []mo.Field{
+		mo.Value("ts", mo.Timestamp(opts.Timestamp)),
+		mo.Value("caller", mo.Caller(3)),
+		// mo.Value("service.id", id),
+		mo.Value("trace.id", TraceID()),
+		// mo.Value("span.id", SpanID()),
+	}
+
+	log := mo.NewLogger(recorder, base...)
+	level := mo.ParseLevel(opts.Level)
+	log.SetLevel(level)
+
+	return mo.New(ctx, log)
+}
+
 func main() {
 	ctx := context.Background()
 	traceId, _ := trace.TraceIDFromHex("4bf92f3577b34da6a3ce929d0e0e4736")
@@ -156,54 +211,53 @@ func main() {
 	})
 
 	ctx = trace.ContextWithSpan(ctx, &mockSpan{sc: sc})
-	// logger := &JSONLogger{
-	// 	encoder: json.NewEncoder(os.Stdout),
-	// }
-	logger := &ConsoleLogger{
-		stdout: os.Stdout,
-		stderr: os.Stderr,
-		pool: &sync.Pool{
-			New: func() interface{} {
-				return new(bytes.Buffer)
-			},
-		},
-	}
-	// id, _ := os.Hostname()
-	log := mo.NewLogger(logger,
-		mo.Value("ts", mo.Timestamp("2006-01-02 15:04:05.000")),
-		mo.Value("caller", mo.Caller(3)),
-		// mo.Value("service.id", id),
-		// mo.Value("service.version", "v1.2.3"),
-		mo.Value("trace.id", TraceID()),
-		// mo.Value("span.id", SpanID()),
-	)
-	l := mo.New(ctx, log)
-	// l.Logger.SetLevel(mo.LevelError)
-	// l.Logger.SetLevel(mo.LevelInfo)
+	log := Init(ctx, &LoggerOpts{
+		Filename:   "logs/app.log",
+		Level:      "debug",
+		Timestamp:  time.DateTime,
+		MaxSize:    10,
+		MaxBackups: 5,
+		Compress:   true,
+	})
+
 	fields := []mo.Field{
 		mo.Value("k1", 123),
 		mo.Value("k2", true),
 		mo.Value("k3", []interface{}{1, true, "test"}),
 	}
 
-	l.Debug("debug message")
-	l.Info("info message")
-	l.Warn("warn message")
-	l.Error("error message")
-	// l.Fatal("fatal message")
+	log.Debug("debug message")
+	log.Debugf("debugf message %s", "test")
+	log.Debugw("debugw message", fields...)
+	log.Debugx(ctx, "debugx message")
+	log.Debugfx(ctx, "debugfx message %s", "test")
+	log.Debugwx(ctx, "debugwx message", fields...)
 
-	l.Debugf("debugf message %s", "test")
-	l.Infof("infof message %s", "test")
-	l.Warnf("warnf message %s", "test")
-	l.Errorf("errorf message %s", "test")
-	// l.Fatalf("fatalf message %s", "test")
+	log.Info("info message")
+	log.Infof("infof message %s", "test")
+	log.Infow("infow message", fields...)
+	log.Infox(ctx, "infox message")
+	log.Infofx(ctx, "infofx message %s", "test")
+	log.Infowx(ctx, "infowx message", fields...)
 
-	l.Debugw("debugw message", fields...)
-	l.Infow("infow message", fields...)
-	l.Warnw("warnw message", fields...)
-	l.Errorw("errorw message", fields...)
-	// l.Fatalw("fatalw message", fields...)
+	log.Warn("warn message")
+	log.Warnf("warnf message %s", "test")
+	log.Warnw("warnw message", fields...)
+	log.Warnx(ctx, "warnx message")
+	log.Warnfx(ctx, "warnfx message %s", "test")
+	log.Warnwx(ctx, "warnwx message", fields...)
 
-	l.Infow("replace ts, caller", mo.Value("ts", "xxx"), mo.Value("caller", "path-to-xxx.go:123"))
-	l.With(context.Background()).Infow("test with context", mo.Value("k1", 123))
+	log.Error("error message")
+	log.Errorf("errorf message %s", "test")
+	log.Errorw("errorw message", fields...)
+	log.Errorx(ctx, "errorx message")
+	log.Errorfx(ctx, "errorfx message %s", "test")
+	log.Errorwx(ctx, "errorwx message", fields...)
+
+	// log.Fatal("fatal message")
+	// log.Fatalf("fatalf message %s", "test")
+	// log.Fatalw("fatalw message", fields...)
+	// log.Fatalx(ctx, "fatalx message")
+	// log.Fatalfx(ctx, "fatalfx message %s", "test")
+	// log.Fatalwx(ctx, "fatalwx message", fields...)
 }

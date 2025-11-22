@@ -2,8 +2,10 @@ package main
 
 import (
 	"context"
+	"os"
 
 	"github.com/mengdu/mo"
+	"github.com/mengdu/mo/record"
 )
 
 type contextKey string
@@ -18,6 +20,12 @@ var TraceId = mo.Valuer(func(ctx context.Context) interface{} {
 })
 
 func main() {
+	mo.SetRecorder(&record.Console{
+		Stdout:           os.Stdout,
+		Stderr:           os.Stderr,
+		LevelType:        "abbr",
+		FilterEmptyField: true,
+	})
 	mo.SetBase(
 		mo.Value("ts", mo.Timestamp("15:04:05.000")),
 		mo.Value("caller", mo.Caller(3)),
