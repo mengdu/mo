@@ -53,11 +53,7 @@ func (l *Logger) SetBase(kv ...Field) {
 // log is the internal method for logging messages at the specified level.
 // Deprecated: use Print, Printf or Printw instead.
 func (l Logger) Log(ctx context.Context, level Level, formatting bool, format string, args []interface{}, kv []Field) {
-	if !l.Enabled(level) {
-		return
-	}
-
-	if l.out == nil {
+	if !l.Enabled(level) || l.out == nil {
 		return
 	}
 

@@ -17,8 +17,8 @@ func New(ctx context.Context, logger *Logger) *Helper {
 }
 
 // With returns a new Helper with the given context.
-func (h *Helper) With(ctx context.Context) *Helper {
-	return &Helper{ctx: ctx, Logger: h.Logger}
+func (h Helper) With(ctx context.Context) Helper {
+	return Helper{ctx: ctx, Logger: h.Logger}
 }
 
 // Debug logs a message at the debug level.

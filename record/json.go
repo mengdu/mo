@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"sync"
 
 	"github.com/mengdu/mo"
 )
@@ -13,6 +14,7 @@ import (
 // Key constants for structured logging
 type JSON struct {
 	Encoder *json.Encoder
+	mu      sync.Mutex
 }
 
 // Log implements the Recorder interface.
@@ -25,7 +27,10 @@ func (l *JSON) Log(ctx context.Context, level mo.Level, msg string, kv []mo.Fiel
 		line[v.Key()] = v.Value()
 	}
 
+	l.mu.Lock()
+	defer l.mu.Unlock()
+
 	if err := l.Encoder.Encode(line); err != nil {
-		os.Stderr.WriteString(fmt.Sprintf("%v", err))
+		fmt.Fprintf(os.Stderr, "write failed: %v\n", err)
 	}
 }

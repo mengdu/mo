@@ -39,7 +39,7 @@ func Caller(skip int) Valuer {
 		}
 		idx := strings.LastIndexByte(file, '/')
 		if idx == -1 {
-			return file[idx+1:] + ":" + strconv.Itoa(line)
+			return file + ":" + strconv.Itoa(line)
 		}
 		idx = strings.LastIndexByte(file[:idx], '/')
 		return file[idx+1:] + ":" + strconv.Itoa(line)

@@ -44,6 +44,7 @@ type stdRecorder struct {
 func (r *stdRecorder) Log(ctx context.Context, level Level, msg string, kv []Field) {
 	buf := r.pool.Get().(*bytes.Buffer)
 	defer r.pool.Put(buf)
+	defer buf.Reset()
 	ts := ""
 	caller := ""
 	for _, v := range kv {
@@ -87,15 +88,18 @@ func (r *stdRecorder) Log(ctx context.Context, level Level, msg string, kv []Fie
 		buf.WriteString(caller)
 	}
 	buf.WriteByte('\n')
-	defer buf.Reset()
 
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	if level >= LevelError {
-		r.stderr.Write(buf.Bytes())
+		if _, err := r.stderr.Write(buf.Bytes()); err != nil {
+			fmt.Fprintf(os.Stderr, "write failed: %v\n", err)
+		}
 		return
 	}
-	r.stdout.Write(buf.Bytes())
+	if _, err := r.stdout.Write(buf.Bytes()); err != nil {
+		fmt.Fprintf(os.Stderr, "write failed: %v\n", err)
+	}
 }
 
 // DefaultRecorder is the default Recorder implementation that writes to os.Stdout and os.Stderr.

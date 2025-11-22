@@ -42,6 +42,8 @@ func (c *Console) Log(ctx context.Context, level mo.Level, msg string, kv []mo.F
 
 	buf := c.pool.Get().(*bytes.Buffer)
 	defer c.pool.Put(buf)
+	defer buf.Reset()
+
 	caller := ""
 	ts := ""
 	for _, v := range kv {
@@ -49,7 +51,7 @@ func (c *Console) Log(ctx context.Context, level mo.Level, msg string, kv []mo.F
 			ts = color.Dim().String(fmt.Sprintf("%v", v.Value()))
 		}
 		if v.Key() == KeyCaller {
-			caller = v.Value().(string)
+			caller, _ = v.Value().(string)
 		}
 	}
 
@@ -117,17 +119,16 @@ func (c *Console) Log(ctx context.Context, level mo.Level, msg string, kv []mo.F
 		buf.WriteString(color.Gray().Dim().String(caller))
 	}
 	buf.WriteByte('\n')
-	defer buf.Reset()
 
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	if level >= mo.LevelError {
 		if _, err := c.Stderr.Write(buf.Bytes()); err != nil {
-			os.Stderr.WriteString(fmt.Sprintf("%v", err))
+			fmt.Fprintf(os.Stderr, "write failed: %v\n", err)
 		}
 		return
 	}
 	if _, err := c.Stdout.Write(buf.Bytes()); err != nil {
-		os.Stderr.WriteString(fmt.Sprintf("%v", err))
+		fmt.Fprintf(os.Stderr, "write failed: %v\n", err)
 	}
 }
