@@ -9,7 +9,7 @@ import (
 var std = New(context.Background(), NewLogger(DefaultRecorder))
 
 // With returns a new Helper instance with the specified context.
-func With(ctx context.Context) Helper {
+func With(ctx context.Context) *Helper {
 	return std.With(ctx)
 }
 
